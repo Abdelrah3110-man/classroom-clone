@@ -7,188 +7,271 @@ const ClassDetails = () => {
   const [classroom, setClassroom] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('stream');
+  const [newPost, setNewPost] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
 
   useEffect(() => {
-    const fetchClassroom = async () => {
-      try {
-        const res = await axios.get(`/api/v1/classrooms/${id}`);
-        setClassroom(res.data);
-      } catch (err) {
-        console.error("Error fetching classroom:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchClassroom();
   }, [id]);
 
-  if (loading) return <div className="loading">Loading...</div>;
-  if (!classroom) return <div className="error">Classroom not found</div>;
+  const fetchClassroom = async () => {
+    try {
+      const res = await axios.get(`/api/v1/classrooms/${id}`);
+      setClassroom(res.data);
+    } catch (err) {
+      console.error("Error fetching classroom:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreatePost = async () => {
+    if (!newPost.trim()) return;
+    setIsPosting(true);
+    try {
+      const res = await axios.post('/api/v1/posts', {
+        classroom_id: id,
+        content: newPost
+      });
+      setClassroom({
+        ...classroom,
+        posts: [res.data, ...(classroom.posts || [])]
+      });
+      setNewPost('');
+    } catch (err) {
+      alert("Failed to post. Check connection.");
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  if (loading) return (
+    <div className="loading-state">
+      <div className="pulse-loader"></div>
+      <p>Synchronizing classroom data...</p>
+    </div>
+  );
+
+  if (!classroom) return <div className="error-state">Classroom not found. Return to <Link to="/">Home</Link></div>;
 
   return (
     <div className="class-details animate-fade-in">
-      <div className="class-banner" style={{ backgroundColor: classroom.banner_color || '#4285f4' }}>
-        <div className="banner-content">
+      {/* Header Banner */}
+      <div className="class-hero" style={{ backgroundColor: classroom.banner_color || '#4285f4' }}>
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
           <h1>{classroom.name}</h1>
-          <p>{classroom.section}</p>
+          <div className="hero-meta">
+            <span>{classroom.section}</span>
+            <span className="dot"></span>
+            <span>Room: {classroom.room || 'General'}</span>
+          </div>
+          <div className="class-code-badge">
+            Code: <strong>{classroom.code}</strong>
+          </div>
         </div>
       </div>
 
-      <div className="tabs">
-        <button 
-          className={`tab ${activeTab === 'stream' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stream')}
-        >
-          Stream
-        </button>
-        <button 
-          className={`tab ${activeTab === 'classwork' ? 'active' : ''}`}
-          onClick={() => setActiveTab('classwork')}
-        >
-          Classwork
-        </button>
-        <button 
-          className={`tab ${activeTab === 'people' ? 'active' : ''}`}
-          onClick={() => setActiveTab('people')}
-        >
-          People
-        </button>
+      {/* Navigation Tabs */}
+      <div className="class-nav glass">
+        <div className="nav-container">
+          {['stream', 'classwork', 'people'].map(tab => (
+            <button 
+              key={tab}
+              className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="tab-content">
-        {activeTab === 'stream' && (
-          <div className="stream-view">
-            <div className="announcement-box glass">
-              <div className="avatar">A</div>
-              <input type="text" placeholder="Announce something to your class" />
-            </div>
-            
-            {classroom.posts?.map(post => (
-              <div key={post.id} className="post-card card">
-                <div className="post-header">
-                  <div className="avatar">{post.user?.name?.[0]}</div>
-                  <div className="post-info">
-                    <div className="post-author">{post.user?.name}</div>
-                    <div className="post-date">{new Date(post.created_at).toLocaleDateString()}</div>
-                  </div>
+      <div className="tab-layout container">
+        {/* Main Content Area */}
+        <div className="main-feed">
+          {activeTab === 'stream' && (
+            <>
+              {/* Post Creation Box */}
+              <div className="post-creator card glass">
+                <div className="creator-row">
+                  <div className="avatar">{classroom.user?.name?.[0] || 'A'}</div>
+                  <textarea 
+                    placeholder="Share something with your class..."
+                    value={newPost}
+                    onChange={e => setNewPost(e.target.value)}
+                  />
                 </div>
-                <div className="post-content">{post.content}</div>
+                {newPost && (
+                  <div className="creator-actions">
+                    <button className="cancel-btn" onClick={() => setNewPost('')}>Cancel</button>
+                    <button className="post-btn" onClick={handleCreatePost} disabled={isPosting}>
+                      {isPosting ? 'Posting...' : 'Post Announcement'}
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
 
-        {activeTab === 'classwork' && (
-          <div className="classwork-view">
-             <div className="work-header">
-                <h2>Assignments & Materials</h2>
-             </div>
-             {classroom.assignments?.length > 0 ? (
-               classroom.assignments.map(assign => (
-                 <div key={assign.id} className="work-item card">
-                    <div className="work-icon assignment">
-                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              {/* Feed Items */}
+              <div className="feed-list">
+                {classroom.posts?.length > 0 ? (
+                  classroom.posts.map(post => (
+                    <div key={post.id} className="feed-card card animate-fade-in">
+                      <div className="feed-header">
+                        <div className="avatar small">{post.user?.name?.[0]}</div>
+                        <div className="feed-meta">
+                          <span className="author-name">{post.user?.name}</span>
+                          <span className="post-time">{new Date(post.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="feed-body">
+                        {post.content}
+                      </div>
+                      <div className="feed-footer">
+                        <input type="text" placeholder="Add class comment..." className="comment-input" />
+                      </div>
                     </div>
-                    <div className="work-title">{assign.title}</div>
-                    <div className="work-date">Due {new Date(assign.due_date).toLocaleDateString()}</div>
+                  ))
+                ) : (
+                  <div className="empty-state card">
+                    <div className="empty-icon">📢</div>
+                    <h3>No announcements yet</h3>
+                    <p>Be the first to share something with your students!</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === 'classwork' && (
+            <div className="classwork-view">
+               <div className="section-title">Assignments & Materials</div>
+               {(classroom.assignments?.length > 0 || classroom.materials?.length > 0) ? (
+                 <div className="work-list">
+                    {classroom.assignments?.map(item => (
+                      <div key={item.id} className="work-card card">
+                        <div className="work-icon assignment">📝</div>
+                        <div className="work-info">
+                          <h4>{item.title}</h4>
+                          <span>Posted {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
+                        </div>
+                        <div className="work-due">Due {new Date(item.due_date).toLocaleDateString()}</div>
+                      </div>
+                    ))}
                  </div>
-               ))
-             ) : (
-               <p className="empty-msg">No assignments yet.</p>
-             )}
+               ) : (
+                 <div className="empty-state">
+                    <h3>Your class is empty</h3>
+                    <p>Add assignments to help your students track their progress.</p>
+                 </div>
+               )}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Info */}
+        <aside className="details-sidebar">
+          <div className="sidebar-widget card">
+            <h4>Upcoming</h4>
+            <p>No work due soon</p>
+            <Link to="#" className="widget-link">View all</Link>
           </div>
-        )}
+        </aside>
       </div>
 
       <style>{`
-        .class-banner {
-          height: 240px;
-          border-radius: var(--radius);
+        .class-hero {
+          height: 280px;
+          border-radius: 16px;
           margin-top: 24px;
+          position: relative;
+          overflow: hidden;
+          color: white;
           display: flex;
           align-items: flex-end;
-          padding: 24px;
-          color: white;
-          background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.3));
+          padding: 32px;
         }
-        .banner-content h1 { font-size: 36px; font-weight: 500; }
-        .banner-content p { font-size: 18px; opacity: 0.9; }
-
-        .tabs {
-          display: flex;
-          justify-content: center;
-          gap: 32px;
-          border-bottom: 1px solid var(--border);
-          margin-top: 16px;
-        }
-        .tab {
-          padding: 16px 24px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          position: relative;
-          transition: var(--transition);
-        }
-        .tab:hover { color: var(--primary); background: rgba(66, 133, 244, 0.05); }
-        .tab.active { color: var(--primary); }
-        .tab.active::after {
-          content: '';
+        .hero-overlay {
           position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background-color: var(--primary);
-          border-radius: 3px 3px 0 0;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
         }
-
-        .tab-content { padding: 32px 0; max-width: 800px; margin: 0 auto; }
-        
-        .announcement-box {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 16px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          margin-bottom: 24px;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .announcement-box input {
-          flex-grow: 1;
-          border: none;
-          outline: none;
-          background: transparent;
+        .hero-content { position: relative; z-index: 1; flex-grow: 1; }
+        .hero-content h1 { font-size: 42px; margin-bottom: 8px; font-weight: 700; }
+        .hero-meta { display: flex; align-items: center; gap: 12px; font-size: 18px; opacity: 0.9; }
+        .dot { width: 4px; height: 4px; border-radius: 50%; background: white; }
+        .class-code-badge {
+          position: absolute;
+          bottom: 0; right: 0;
+          background: rgba(255,255,255,0.2);
+          backdrop-filter: blur(8px);
+          padding: 8px 16px;
+          border-radius: 12px 0 0 0;
           font-size: 14px;
         }
 
-        .post-card { margin-bottom: 16px; padding: 20px; }
-        .post-header { display: flex; gap: 12px; margin-bottom: 12px; }
-        .post-author { font-weight: 500; font-size: 14px; }
-        .post-date { font-size: 12px; color: var(--text-secondary); }
-        .post-content { font-size: 15px; color: var(--text-main); line-height: 1.6; }
+        .class-nav {
+          background: white;
+          margin-top: 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          position: sticky;
+          top: 80px;
+          z-index: 10;
+        }
+        .nav-container { display: flex; justify-content: center; }
+        .nav-tab {
+          padding: 18px 32px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          position: relative;
+          transition: 0.2s;
+        }
+        .nav-tab.active { color: var(--primary); }
+        .nav-tab.active::after {
+          content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 4px;
+          background: var(--primary); border-radius: 4px 4px 0 0;
+        }
 
-        .work-item {
-          display: flex;
-          align-items: center;
-          padding: 16px;
-          margin-bottom: 8px;
-          gap: 16px;
+        .tab-layout {
+          display: grid;
+          grid-template-columns: 1fr 280px;
+          gap: 24px;
+          margin-top: 24px;
+          padding-bottom: 80px;
         }
-        .work-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #e8f0fe;
-          color: var(--primary);
+
+        .post-creator { padding: 16px; margin-bottom: 24px; border: 1px solid var(--border); }
+        .creator-row { display: flex; gap: 16px; }
+        .creator-row textarea {
+          flex-grow: 1; border: none; outline: none; background: transparent;
+          resize: none; padding-top: 8px; font-size: 15px; min-height: 48px;
         }
-        .work-title { flex-grow: 1; font-weight: 500; }
-        .work-date { font-size: 13px; color: var(--text-secondary); }
-        
-        .empty-msg { text-align: center; padding: 48px; color: var(--text-secondary); }
+        .creator-actions {
+          display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; padding-top: 12px;
+          border-top: 1px solid var(--border);
+        }
+        .post-btn { background: var(--primary); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; }
+        .post-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .feed-card { padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
+        .feed-header { display: flex; gap: 12px; margin-bottom: 16px; }
+        .author-name { display: block; font-weight: 600; font-size: 14px; }
+        .post-time { font-size: 12px; color: var(--text-secondary); }
+        .feed-body { font-size: 15px; line-height: 1.6; margin-bottom: 20px; color: var(--text-main); }
+        .comment-input {
+          width: 100%; padding: 10px 16px; border-radius: 20px;
+          background: #f8f9fa; border: 1px solid transparent; font-size: 13px;
+        }
+        .comment-input:focus { background: white; border-color: var(--primary); outline: none; }
+
+        .details-sidebar h4 { font-size: 14px; margin-bottom: 12px; color: var(--text-main); }
+        .sidebar-widget { padding: 16px; border: 1px solid var(--border); }
+        .widget-link { display: block; margin-top: 16px; font-size: 13px; color: var(--primary); font-weight: 600; }
+
+        .loading-state { height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .pulse-loader { width: 48px; height: 48px; background: var(--primary); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.5; } }
       `}</style>
     </div>
   )
