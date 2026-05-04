@@ -5,60 +5,37 @@ const ClassCard = ({ classroom }) => {
   const { id, name, section, user, banner_color } = classroom;
 
   return (
-    <div className="card animate-fade-in">
-      <div className="card-header" style={{ backgroundColor: banner_color || '#4285f4' }}>
-        <Link to={`/class/${id}`} className="card-title">{name}</Link>
-        <div className="card-subtitle">{section}</div>
-        <div className="card-subtitle" style={{ marginTop: '4px' }}>{user?.name}</div>
+    <div className="card-premium flex flex-col group animate-fade-in">
+      <div 
+        className="h-[100px] p-4 text-white relative flex flex-col justify-start" 
+        style={{ backgroundColor: banner_color || '#4285f4' }}
+      >
+        <Link to={`/class/${id}`} className="text-xl font-medium truncate z-10 hover:underline">
+          {name}
+        </Link>
+        <div className="text-[13px] opacity-90 z-10">{section}</div>
+        <div className="text-[13px] mt-1 z-10">{user?.name}</div>
         
-        <div className="teacher-avatar">
+        <div className="absolute right-4 -bottom-7 w-14 h-14 rounded-full bg-white border border-border flex items-center justify-center text-2xl font-medium text-primary shadow-md z-20">
           {user?.name?.[0] || 'T'}
         </div>
       </div>
-      <div className="card-body">
-        <div className="next-task">
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500' }}>Next Task</p>
-          <p style={{ fontSize: '13px', marginTop: '4px' }}>No upcoming tasks</p>
+      
+      <div className="p-4 flex-grow min-h-[120px] flex flex-col justify-between">
+        <div className="mt-2">
+          <p className="text-[12px] text-text-secondary font-medium">Next Task</p>
+          <p className="text-[13px] mt-1 text-text-main">No upcoming tasks</p>
         </div>
       </div>
-      <div className="card-footer">
-        <button className="footer-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      
+      <div className="p-3 px-4 border-t border-border flex justify-end gap-3">
+        <button className="p-2 rounded-full text-text-secondary hover:bg-black/5 transition-all">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
-        <button className="footer-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        <button className="p-2 rounded-full text-text-secondary hover:bg-black/5 transition-all">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
         </button>
       </div>
-
-      <style>{`
-        .teacher-avatar {
-          position: absolute;
-          right: 16px;
-          bottom: -28px;
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          background-color: #fff;
-          border: 1px solid var(--border);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          font-weight: 500;
-          color: var(--primary);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          z-index: 2;
-        }
-        .footer-icon {
-          color: var(--secondary);
-          padding: 8px;
-          border-radius: 50%;
-          transition: var(--transition);
-        }
-        .footer-icon:hover {
-          background-color: rgba(0,0,0,0.05);
-        }
-      `}</style>
     </div>
   )
 }
