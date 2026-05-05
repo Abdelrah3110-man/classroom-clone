@@ -25,6 +25,8 @@ class AuthApiController extends Controller
                 return response()->json(['message' => 'Invalid credentials'], 401);
             }
 
+            Auth::login($user);
+
             return response()->json([
                 'user' => $user,
                 'message' => 'Login successful'
