@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 const ClassCard = ({ classroom }) => {
-  const { id, name, section, user, banner_color } = classroom;
+  const { id, name, section, teacher, banner_color } = classroom;
 
   return (
     <div className="card-premium flex flex-col group animate-fade-in">
@@ -14,10 +14,10 @@ const ClassCard = ({ classroom }) => {
           {name}
         </Link>
         <div className="text-[13px] opacity-90 z-10">{section}</div>
-        <div className="text-[13px] mt-1 z-10">{user?.name}</div>
+        <div className="text-[13px] mt-1 z-10">{teacher?.name}</div>
         
         <div className="absolute right-4 -bottom-7 w-14 h-14 rounded-full bg-white border border-border flex items-center justify-center text-2xl font-medium text-primary shadow-md z-20">
-          {user?.name?.[0] || 'T'}
+          {teacher?.name?.[0] || 'T'}
         </div>
       </div>
       

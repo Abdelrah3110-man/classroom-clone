@@ -1,10 +1,16 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Home from './pages/Home'
+import Dashboard from './pages/Home'
 import ClassDetails from './pages/ClassDetails'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
+import CreateAssignment from './pages/CreateAssignment'
+import AssignmentDetails from './pages/AssignmentDetails'
+import EditAssignment from './pages/EditAssignment'
+import CreateMaterial from './pages/CreateMaterial'
+import MaterialDetails from './pages/MaterialDetails'
+import EditMaterial from './pages/EditMaterial'
 import Navbar from './components/Navbar'
 import { useAuth } from './context/AuthContext'
 
@@ -24,8 +30,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/class/:id" element={<PrivateRoute><ClassDetails /></PrivateRoute>} />
+          <Route path="/class/:id/assignments/create" element={<PrivateRoute><CreateAssignment /></PrivateRoute>} />
+          <Route path="/class/:id/assignments/:assignmentId" element={<PrivateRoute><AssignmentDetails /></PrivateRoute>} />
+          <Route path="/class/:id/assignments/:assignmentId/edit" element={<PrivateRoute><EditAssignment /></PrivateRoute>} />
+          <Route path="/class/:id/materials/create" element={<PrivateRoute><CreateMaterial /></PrivateRoute>} />
+          <Route path="/class/:id/materials/:materialId" element={<PrivateRoute><MaterialDetails /></PrivateRoute>} />
+          <Route path="/class/:id/materials/:materialId/edit" element={<PrivateRoute><EditMaterial /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>
       </main>

@@ -4,13 +4,17 @@ import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(formData.email, formData.password);
-    navigate('/');
+    const success = await register(formData.name, formData.email, formData.password);
+    if (success) {
+      navigate('/');
+    } else {
+      alert("Registration failed. Please check your connection or database.");
+    }
   };
 
   return (
@@ -27,7 +31,7 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input 
             type="text" 
-            placeholder="First name" 
+            placeholder="Name" 
             required 
             className="input-google"
             value={formData.name}
@@ -35,7 +39,7 @@ const Register = () => {
           />
           <input 
             type="email" 
-            placeholder="Your email address" 
+            placeholder="Email address" 
             required 
             className="input-google"
             value={formData.email}

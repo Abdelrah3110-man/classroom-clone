@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 
 const AuthContext = createContext();
 
@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (simplified for demo)
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -17,21 +16,48 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // In a real app, we'd hit /api/login
-    // For this demo, we'll simulate it
-    const mockUser = { id: 1, name: 'Senior Developer', email: email };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    return mockUser;
+    try {
+      const res = await api.post('/login', { email, password });
+      const userData = res.data.user;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (err) {
+      const message = err.response?.data?.message || err.message;
+      alert("Login Error: " + message);
+      console.error("Login error", err);
+      return null;
+    }
   };
 
-  const logout = () => {
+  const register = async (name, email, password) => {
+    try {
+      const res = await api.post('/register', { name, email, password });
+      console.log("Registration response", res.data);
+      const userData = res.data.user;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (err) {
+      console.error("Register error", err);
+      const message = err.response?.data?.message || err.message || "Unknown error";
+      alert("Register Error: " + message);
+      return null;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (err) {
+      console.error("Logout error", err);
+    }
     setUser(null);
     localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

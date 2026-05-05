@@ -11,17 +11,27 @@ class PostApiController extends Controller
 {
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'classroom_id' => 'required|exists:classrooms,id',
-            'content' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'classroom_id' => 'required|exists:classrooms,id',
+                'content' => 'required|string',
+            ]);
 
-        $validated['user_id'] = Auth::id() ?? 1;
+            // Map 'content' from frontend to 'description' in DB
+            $postData = [
+                'classroom_id' => $validated['classroom_id'],
+                'description' => $validated['content'],
+                'user_id' => Auth::id() ?? 1,
+                'type' => 'announcement' // default type
+            ];
 
-        $post = Post::create($validated);
-        $post->load('user');
+            $post = Post::create($postData);
+            $post->load('user');
 
-        return response()->json($post, 21);
+            return response()->json($post, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function destroy($id)
