@@ -25,6 +25,8 @@ Route::group([], function () {
     Route::post('/classrooms', [ClassroomApiController::class, 'store']);
     Route::post('/classrooms/join', [ClassroomApiController::class, 'joinByCode']);
     Route::get('/classrooms/{id}', [ClassroomApiController::class, 'show']);
+    Route::put('/classrooms/{id}', [ClassroomApiController::class, 'update']);
+    Route::delete('/classrooms/{id}', [ClassroomApiController::class, 'destroy']);
     
     // Posts
     Route::post('/posts', [PostApiController::class, 'store']);

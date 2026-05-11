@@ -4,37 +4,39 @@
 
 @layer base {
   body {
-    @apply font-outfit bg-bg text-text-main;
+    @apply font-inter text-text-main antialiased bg-bg min-h-screen relative;
+    background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent 40%),
+                radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.1), transparent 40%),
+                #f1f5f9;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-glass;
   }
   
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 shadow-glass text-white;
+  }
+
   .card-premium {
-    @apply bg-white rounded-google border border-border overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-premium hover:-translate-y-1 relative;
   }
 
   .btn-primary {
-    @apply bg-primary text-white px-6 py-2.5 rounded-full font-semibold shadow-md hover:bg-primary-hover hover:-translate-y-0.5 transition-all active:scale-95;
+    @apply bg-gradient-to-r from-primary to-primary-hover text-white px-6 py-2.5 rounded-full font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 transition-all active:scale-95 duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-text-main px-6 py-2.5 rounded-full font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-95 duration-200;
   }
   
   .input-google {
-    @apply w-full px-4 py-3 border border-border rounded-lg focus:border-primary focus:outline-none transition-colors;
+    @apply w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all duration-200;
   }
 
   .avatar-circle {
-    @apply w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary font-bold text-sm border border-border;
+    @apply w-10 h-10 rounded-full bg-gradient-to-br from-primary-light to-primary flex items-center justify-center text-white font-bold text-sm shadow-md;
   }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }

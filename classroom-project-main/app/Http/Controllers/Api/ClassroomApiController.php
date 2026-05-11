@@ -9,17 +9,23 @@ use Illuminate\Support\Facades\Auth;
 
 class ClassroomApiController extends Controller
 {
-    /**
-     * Display a listing of classrooms.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch classrooms with teacher and nested relationships for dashboard stats
+        $userId = $request->input('user_id') ?? Auth::id() ?? 1;
+
+        // Fetch classrooms where user is teacher OR user is a student
         $classrooms = Classroom::with([
             'teacher',
             'students',
             'assignments.submissions'
-        ])->latest()->get();
+        ])
+        ->where('teacher_id', $userId)
+        ->orWhereHas('students', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+        ->latest()
+        ->get();
+        
         return response()->json($classrooms);
     }
 
@@ -35,10 +41,15 @@ class ClassroomApiController extends Controller
             'room' => 'nullable|string|max:255',
         ]);
 
-        $validated['teacher_id'] = Auth::id() ?? 1;
+        $userId = $request->input('user_id') ?? Auth::id() ?? 1;
+
+        $validated['teacher_id'] = $userId;
         $validated['code'] = strtoupper(substr(md5(time()), 0, 7));
 
         $classroom = Classroom::create($validated);
+        
+        // Load relationships so frontend has consistent data
+        $classroom->load('teacher', 'students', 'assignments.submissions');
 
         return response()->json($classroom, 201);
     }
@@ -78,14 +89,59 @@ class ClassroomApiController extends Controller
             return response()->json(['message' => 'Invalid class code'], 404);
         }
 
+        $userId = $request->input('user_id') ?? Auth::id() ?? 1;
+
         // Attach student
-        if (!$classroom->students()->where('user_id', Auth::id())->exists()) {
-            $classroom->students()->attach(Auth::id());
+        if (!$classroom->students()->where('user_id', $userId)->exists()) {
+            $classroom->students()->attach($userId);
         }
+
+        // Load relationships so frontend has consistent data
+        $classroom->load('teacher', 'students', 'assignments.submissions');
 
         return response()->json([
             'message' => 'Joined successfully',
             'classroom' => $classroom
         ]);
+    }
+
+    /**
+     * Update the specified classroom.
+     */
+    public function update(Request $request, $id)
+    {
+        $classroom = Classroom::findOrFail($id);
+
+        // Check if user is the teacher
+        if ($classroom->teacher_id !== (Auth::id() ?? 1)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'section' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'room' => 'nullable|string|max:255',
+        ]);
+
+        $classroom->update($validated);
+
+        return response()->json(['message' => 'Classroom updated successfully', 'classroom' => $classroom]);
+    }
+
+    /**
+     * Remove the specified classroom.
+     */
+    public function destroy($id)
+    {
+        $classroom = Classroom::findOrFail($id);
+
+        if ($classroom->teacher_id !== (Auth::id() ?? 1)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $classroom->delete();
+
+        return response()->json(['message' => 'Classroom deleted successfully']);
     }
 }

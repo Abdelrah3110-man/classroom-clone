@@ -1,64 +1,106 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+import ApplicationLogo from '../components/ui/ApplicationLogo';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await register(formData.name, formData.email, formData.password);
-    if (success) {
+    setError('');
+
+    if (password !== passwordConfirm) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      await register(name, email, password, passwordConfirm);
       navigate('/');
-    } else {
-      alert("Registration failed. Please check your connection or database.");
+    } catch (err) {
+      setError('Failed to create an account');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg px-4 animate-fade-in">
-      <div className="w-full max-w-[500px] bg-white border border-border rounded-xl p-10 md:p-12 text-center shadow-sm">
-        <div className="mb-10">
-          <h1 className="text-2xl font-bold mb-8">
-            <span className="text-primary">Google</span> <span className="text-text-secondary font-normal">Classroom</span>
-          </h1>
-          <h2 className="text-2xl font-normal mb-2">Create your account</h2>
-          <p className="text-text-secondary">to continue to Classroom</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-md w-full glass p-10 rounded-[2.5rem] shadow-premium animate-fade-in relative overflow-hidden">
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input 
-            type="text" 
-            placeholder="Name" 
-            required 
-            className="input-google"
-            value={formData.name}
-            onChange={e => setFormData({...formData, name: e.target.value})}
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/20 to-pink-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-secondary/20 to-blue-500/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
+
+        <div className="relative z-10 text-center mb-8">
+          <ApplicationLogo className="justify-center mb-6" />
+          <h2 className="text-3xl font-extrabold text-text-main tracking-tight mb-2">Create Account</h2>
+          <p className="text-text-secondary font-medium">Join us and start learning today</p>
+        </div>
+
+        {error && (
+          <div className="relative z-10 mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-sm font-bold text-center animate-shake">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-4">
+          <Input 
+            label="Full Name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="John Doe"
+            required
           />
-          <input 
-            type="email" 
-            placeholder="Email address" 
-            required 
-            className="input-google"
-            value={formData.email}
-            onChange={e => setFormData({...formData, email: e.target.value})}
+
+          <Input 
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            required 
-            className="input-google"
-            value={formData.password}
-            onChange={e => setFormData({...formData, password: e.target.value})}
+
+          <Input 
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
           />
-          
-          <div className="flex justify-between items-center mt-10">
-            <Link to="/login" className="text-primary font-bold text-sm hover:bg-blue-50 px-3 py-2 rounded transition-all">Sign in instead</Link>
-            <button type="submit" className="bg-primary text-white px-8 py-2 rounded font-bold hover:bg-primary-hover shadow-md transition-all active:scale-95">Register</button>
+
+          <Input 
+            label="Confirm Password"
+            type="password"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
+
+          <div className="pt-4">
+            <Button type="submit" className="w-full text-lg">
+              Sign Up
+            </Button>
           </div>
         </form>
+
+        <p className="relative z-10 mt-8 text-center text-text-secondary font-medium">
+          Already have an account?{' '}
+          <Link to="/login" className="text-primary hover:text-primary-hover font-bold transition-colors">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );

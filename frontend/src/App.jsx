@@ -11,6 +11,7 @@ import EditAssignment from './pages/EditAssignment'
 import CreateMaterial from './pages/CreateMaterial'
 import MaterialDetails from './pages/MaterialDetails'
 import EditMaterial from './pages/EditMaterial'
+import EditClassroom from './pages/EditClassroom'
 import Navbar from './components/Navbar'
 import { useAuth } from './context/AuthContext'
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/class/:id" element={<PrivateRoute><ClassDetails /></PrivateRoute>} />
+          <Route path="/class/:id/edit" element={<PrivateRoute><EditClassroom /></PrivateRoute>} />
           <Route path="/class/:id/assignments/create" element={<PrivateRoute><CreateAssignment /></PrivateRoute>} />
           <Route path="/class/:id/assignments/:assignmentId" element={<PrivateRoute><AssignmentDetails /></PrivateRoute>} />
           <Route path="/class/:id/assignments/:assignmentId/edit" element={<PrivateRoute><EditAssignment /></PrivateRoute>} />
