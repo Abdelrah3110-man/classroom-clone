@@ -21,7 +21,7 @@ class PostApiController extends Controller
             $postData = [
                 'classroom_id' => $validated['classroom_id'],
                 'description' => $validated['content'],
-                'user_id' => Auth::id() ?? 1,
+                'user_id' => $request->user_id ?? Auth::id() ?? 1,
                 'type' => 'announcement' // default type
             ];
 

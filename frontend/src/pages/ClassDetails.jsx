@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 
 const ClassDetails = () => {
+  const { user, loading: authLoading } = useAuth();
   const { id } = useParams();
   const [classroom, setClassroom] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,11 @@ const ClassDetails = () => {
     if (!newPost.trim()) return;
     setIsPosting(true);
     try {
-      const res = await api.post('/posts', { classroom_id: id, content: newPost });
+      const res = await api.post('/posts', { 
+        classroom_id: id, 
+        content: newPost,
+        user_id: user?.id
+      });
       setClassroom({ ...classroom, posts: [res.data, ...(classroom.posts || [])] });
       setNewPost('');
     } catch (err) {
@@ -46,7 +52,11 @@ const ClassDetails = () => {
     if (!text?.trim()) return;
     
     try {
-      const res = await api.post('/comments', { post_id: postId, content: text });
+      const res = await api.post('/comments', { 
+        post_id: postId, 
+        content: text,
+        user_id: user?.id
+      });
       
       const updatedPosts = classroom.posts.map(p => {
         if (p.id === postId) {
@@ -62,7 +72,13 @@ const ClassDetails = () => {
     }
   };
 
-  if (loading) return (
+  const isTeacher = classroom && user && String(classroom.teacher_id) === String(user.id);
+  const upcomingAssignments = classroom?.assignments
+    ?.filter(a => new Date(a.due_date) >= new Date())
+    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+    .slice(0, 3) || [];
+
+  if (loading || authLoading) return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 text-text-secondary animate-fade-in">
       <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
       <p className="font-medium tracking-wide">Syncing classroom workspace...</p>
@@ -85,7 +101,7 @@ const ClassDetails = () => {
     <div className="max-w-6xl mx-auto px-4 pb-24 animate-fade-in">
       {/* Premium Header Banner */}
       <div 
-        className="h-[320px] rounded-3xl mt-6 relative overflow-hidden text-white flex items-end p-10 shadow-premium transition-transform hover:scale-[1.01] duration-500" 
+        className="min-h-[220px] md:h-[320px] rounded-3xl mt-6 relative overflow-hidden text-white flex items-end p-6 md:p-10 shadow-premium transition-transform hover:scale-[1.01] duration-500" 
         style={{ 
           background: `linear-gradient(135deg, ${classroom.banner_color || '#6366f1'} 0%, ${classroom.banner_color ? classroom.banner_color+'aa' : '#ec4899'} 100%)` 
         }}
@@ -93,36 +109,36 @@ const ClassDetails = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         
-        {/* Settings button for teacher */}
-        {classroom.teacher_id === JSON.parse(localStorage.getItem('user'))?.id && (
+        {/* Settings button for teacher ONLY */}
+        {isTeacher && (
           <Link 
             to={`/class/${id}/edit`} 
-            className="absolute top-6 left-6 p-2.5 bg-white/10 hover:bg-white/30 backdrop-blur-md rounded-xl transition-colors z-20 text-white"
+            className="absolute top-4 left-4 md:top-6 md:left-6 p-2 bg-white/10 hover:bg-white/30 backdrop-blur-md rounded-xl transition-colors z-20 text-white"
             title="Classroom Settings"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           </Link>
         )}
 
         <div className="relative z-10 flex-grow animate-slide-up">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-3 tracking-tight">{classroom.name}</h1>
-          <div className="flex flex-wrap items-center gap-4 text-lg font-medium opacity-90">
-            <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full">{classroom.section}</span>
-            <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full">Room: {classroom.room || 'General'}</span>
+          <h1 className="text-3xl md:text-6xl font-extrabold mb-3 tracking-tight pr-10">{classroom.name}</h1>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-base md:text-lg font-medium opacity-90">
+            <span className="bg-white/20 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full">{classroom.section}</span>
+            <span className="bg-white/20 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full">Room: {classroom.room || 'General'}</span>
           </div>
-          <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-xl px-5 py-2.5 rounded-2xl text-sm border border-white/30 shadow-lg font-mono tracking-widest font-bold flex flex-col items-end">
-            <span>Class Code</span>
-            <span className="text-xl tracking-[0.2em]">{classroom.code}</span>
+          <div className="absolute top-0 right-0 md:top-6 md:right-6 bg-white/20 backdrop-blur-xl px-4 py-2 md:px-5 md:py-2.5 rounded-bl-3xl md:rounded-2xl text-[10px] md:text-sm border-l border-b md:border border-white/30 shadow-lg font-mono tracking-widest font-bold flex flex-col items-end">
+            <span className="opacity-70 uppercase">Code</span>
+            <span className="text-base md:text-xl tracking-[0.2em]">{classroom.code}</span>
           </div>
         </div>
       </div>
 
       {/* Modern Navigation Tabs */}
-      <div className="glass mt-8 rounded-2xl sticky top-20 z-30 mb-8 mx-auto w-fit px-2 py-2 flex gap-2">
+      <div className="glass mt-8 rounded-2xl sticky top-20 z-30 mb-8 mx-auto w-fit px-1.5 py-1.5 flex gap-1">
         {['stream', 'classwork', 'people'].map(tab => (
           <button 
             key={tab}
-            className={`px-8 py-3 font-semibold rounded-xl transition-all duration-300 capitalize ${activeTab === tab ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-main hover:bg-slate-50'}`}
+            className={`px-4 md:px-8 py-2 md:py-3 text-sm md:text-base font-semibold rounded-xl transition-all duration-300 capitalize ${activeTab === tab ? 'bg-white text-primary shadow-sm' : 'text-text-secondary hover:text-text-main hover:bg-slate-50'}`}
             onClick={() => setActiveTab(tab)}
           >
             {tab}
@@ -135,30 +151,32 @@ const ClassDetails = () => {
           
           {activeTab === 'stream' && (
             <>
-              {/* Post Creation Box */}
-              <div className="glass p-6 rounded-3xl">
-                <div className="flex gap-5">
-                  <div className="avatar-circle w-12 h-12 text-lg flex-shrink-0 shadow-lg">{classroom.teacher?.name?.[0] || 'A'}</div>
-                  <div className="flex-grow">
-                    <textarea 
-                      placeholder="Announce something to your class..."
-                      className="w-full border-none outline-none bg-transparent resize-none pt-3 text-[16px] text-text-main placeholder-slate-400 min-h-[60px]"
-                      value={newPost}
-                      onChange={e => setNewPost(e.target.value)}
-                    />
-                    {newPost && (
-                      <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-200/50 animate-fade-in">
-                        <button className="btn-secondary" onClick={() => setNewPost('')}>Cancel</button>
-                        <button className="btn-primary flex items-center gap-2" onClick={handleCreatePost} disabled={isPosting}>
-                          {isPosting ? (
-                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Posting</>
-                          ) : 'Post Announcement'}
-                        </button>
-                      </div>
-                    )}
+              {/* Post Creation Box - TEACHER ONLY */}
+              {isTeacher && (
+                <div className="glass p-6 rounded-3xl">
+                  <div className="flex gap-5">
+                    <div className="avatar-circle w-12 h-12 text-lg flex-shrink-0 shadow-lg">{classroom.teacher?.name?.[0] || 'A'}</div>
+                    <div className="flex-grow">
+                      <textarea 
+                        placeholder="Announce something to your class..."
+                        className="w-full border-none outline-none bg-transparent resize-none pt-3 text-[16px] text-text-main placeholder-slate-400 min-h-[60px]"
+                        value={newPost}
+                        onChange={e => setNewPost(e.target.value)}
+                      />
+                      {newPost && (
+                        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-200/50 animate-fade-in">
+                          <button className="btn-secondary" onClick={() => setNewPost('')}>Cancel</button>
+                          <button className="btn-primary flex items-center gap-2" onClick={handleCreatePost} disabled={isPosting}>
+                            {isPosting ? (
+                              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Posting</>
+                            ) : 'Post Announcement'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Feed */}
               <div className="space-y-6">
@@ -194,7 +212,7 @@ const ClassDetails = () => {
                         )}
                         <form onSubmit={(e) => handleCreateComment(post.id, e)} className="flex items-center gap-3 relative mt-4">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-pink-400 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
-                            {classroom.teacher?.name?.[0] || 'M'}
+                            {user?.name?.[0] || 'M'}
                           </div>
                           <input 
                             type="text" 
@@ -228,16 +246,19 @@ const ClassDetails = () => {
                    <h2 className="text-2xl font-bold text-text-main">Classwork</h2>
                    <p className="text-text-secondary text-sm mt-1">Assignments and study materials</p>
                  </div>
-                 <div className="flex gap-3">
-                   <Link to={`/class/${id}/materials/create`} className="btn-secondary flex items-center gap-2">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-                      Material
-                   </Link>
-                   <Link to={`/class/${id}/assignments/create`} className="btn-primary flex items-center gap-2">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                      Assignment
-                   </Link>
-                 </div>
+                 {/* Create Buttons - TEACHER ONLY */}
+                 {isTeacher && (
+                   <div className="flex gap-3">
+                     <Link to={`/class/${id}/materials/create`} className="btn-secondary flex items-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        Material
+                     </Link>
+                     <Link to={`/class/${id}/assignments/create`} className="btn-primary flex items-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Assignment
+                     </Link>
+                   </div>
+                 )}
                </div>
                {(classroom.assignments?.length > 0 || classroom.materials?.length > 0) ? (
                  <div className="space-y-4">
@@ -309,9 +330,29 @@ const ClassDetails = () => {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               Upcoming
             </h4>
-            <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm text-center">
-              <p className="text-sm font-medium text-text-secondary mb-3">No work due soon</p>
-              <Link to="#" className="text-sm font-bold text-primary hover:text-primary-hover transition-colors">View all work</Link>
+            <div className="space-y-3">
+              {upcomingAssignments.length > 0 ? (
+                upcomingAssignments.map(item => (
+                  <Link 
+                    key={item.id} 
+                    to={`/class/${id}/assignments/${item.id}`}
+                    className="block p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group"
+                  >
+                    <p className="text-xs font-bold text-primary mb-1 uppercase tracking-tighter">Due {new Date(item.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                    <p className="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors">{item.title}</p>
+                  </Link>
+                ))
+              ) : (
+                <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm text-center">
+                  <p className="text-sm font-medium text-text-secondary mb-3">No work due soon</p>
+                </div>
+              )}
+              <button 
+                onClick={() => setActiveTab('classwork')}
+                className="w-full mt-2 text-sm font-bold text-primary hover:text-primary-hover transition-colors py-2 rounded-lg hover:bg-primary/5"
+              >
+                View all work
+              </button>
             </div>
           </div>
         </aside>

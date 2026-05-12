@@ -17,7 +17,7 @@ Route::group([], function () {
     Route::post('/logout', [AuthApiController::class, 'logout']);
 
     // Profile
-    Route::put('/profile', [ProfileApiController::class, 'update']);
+    Route::post('/profile', [ProfileApiController::class, 'update']);
     Route::put('/profile/password', [ProfileApiController::class, 'updatePassword']);
 
     // Classrooms

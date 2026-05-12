@@ -7,10 +7,7 @@ const Profile = () => {
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    email: user?.email || '',
-    current_password: '',
-    new_password: '',
-    new_password_confirmation: ''
+    email: user?.email || ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -29,41 +26,32 @@ const Profile = () => {
     setSuccess('');
     setError('');
     
+    console.log("Current user in profile:", user);
+    console.log("Sending payload:", { user_id: user?.id, name: formData.name, email: formData.email });
+
     try {
-      const res = await api.put('/profile', {
+      const res = await api.post('/profile', {
+        user_id: user?.id,
         name: formData.name,
         email: formData.email
       });
+      console.log("Response from server:", res.data);
       setUser(res.data.user);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e) => {
-    e.preventDefault();
-    if (formData.new_password !== formData.new_password_confirmation) {
-      return setError('New passwords do not match.');
-    }
-    
-    setLoading(true);
-    setSuccess('');
-    setError('');
-    
-    try {
-      await api.put('/profile/password', {
-        current_password: formData.current_password,
-        password: formData.new_password,
-        password_confirmation: formData.new_password_confirmation
-      });
-      setSuccess('Password updated successfully!');
-      setFormData({ ...formData, current_password: '', new_password: '', new_password_confirmation: '' });
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update password.');
+      console.error("FULL ERROR OBJECT:", err);
+      if (err.response) {
+        console.error("Error Response Data:", err.response.data);
+        console.error("Error Status:", err.response.status);
+        setError(`Server Error (${err.response.status}): ${err.response.data.message || 'Unknown error'}`);
+      } else if (err.request) {
+        console.error("No Response Received. Request object:", err.request);
+        setError("Network Error: No response from server. Check if backend is running on port 8080.");
+      } else {
+        console.error("Request Setup Error:", err.message);
+        setError(`Request Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -73,7 +61,7 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-text-main">Account Settings</h1>
-        <p className="text-text-secondary mt-1">Manage your profile, security, and preferences.</p>
+        <p className="text-text-secondary mt-1">Manage your profile and preferences.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8">
@@ -148,57 +136,6 @@ const Profile = () => {
                   className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primary-hover disabled:opacity-50 transition-all"
                 >
                   Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Change Password */}
-          <div className="card-premium p-8">
-            <h3 className="text-xl font-bold text-text-main mb-6 border-b border-border pb-4">Change Password</h3>
-            <form onSubmit={handleUpdatePassword} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-text-secondary mb-2">Current Password</label>
-                <input 
-                  type="password" 
-                  name="current_password"
-                  value={formData.current_password}
-                  onChange={handleChange}
-                  className="w-full p-4 bg-bg rounded-xl border border-transparent focus:bg-white focus:border-primary focus:outline-none transition-all font-medium"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-bold text-text-secondary mb-2">New Password</label>
-                  <input 
-                    type="password" 
-                    name="new_password"
-                    value={formData.new_password}
-                    onChange={handleChange}
-                    className="w-full p-4 bg-bg rounded-xl border border-transparent focus:bg-white focus:border-primary focus:outline-none transition-all font-medium"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-text-secondary mb-2">Confirm New Password</label>
-                  <input 
-                    type="password" 
-                    name="new_password_confirmation"
-                    value={formData.new_password_confirmation}
-                    onChange={handleChange}
-                    className="w-full p-4 bg-bg rounded-xl border border-transparent focus:bg-white focus:border-primary focus:outline-none transition-all font-medium"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end pt-2">
-                <button 
-                  type="submit" 
-                  disabled={loading || !formData.new_password}
-                  className="px-8 py-3 bg-gray-800 text-white font-bold rounded-xl shadow-md hover:bg-black disabled:opacity-50 transition-all"
-                >
-                  Update Password
                 </button>
               </div>
             </form>

@@ -100,37 +100,39 @@ const AssignmentDetails = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10">
         {/* Left Column: Details & Instructions */}
-        <div className="space-y-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <div className="glass p-8 rounded-[2rem]">
-            <div className="flex items-start gap-6 border-b border-slate-200 pb-8">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-white flex items-center justify-center text-3xl flex-shrink-0 mt-1 shadow-lg shadow-primary/30">
+        <div className="space-y-6 md:space-y-8 animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="glass p-5 md:p-8 rounded-[2rem]">
+            <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 border-b border-slate-200 pb-6 md:pb-8">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-white flex items-center justify-center text-2xl md:text-3xl flex-shrink-0 shadow-lg shadow-primary/30">
                 📝
               </div>
-              <div className="flex-grow">
-                <div className="flex justify-between items-start mb-3">
-                  <h1 className="text-4xl font-extrabold text-text-main tracking-tight leading-tight">{assignment.title}</h1>
+              <div className="flex-grow w-full">
+                <div className="flex justify-between items-start mb-3 gap-2">
+                  <h1 className="text-2xl md:text-4xl font-extrabold text-text-main tracking-tight leading-tight">{assignment.title}</h1>
                   {isTeacher && (
                     <button 
                       onClick={() => navigate(`/class/${id}/assignments/${assignmentId}/edit`)}
-                      className="p-3 bg-slate-50 border border-slate-200 text-text-secondary hover:text-primary hover:border-primary/30 rounded-xl transition-all shadow-sm"
+                      className="p-2 md:p-3 bg-slate-50 border border-slate-200 text-text-secondary hover:text-primary rounded-xl transition-all shadow-sm"
                       title="Edit Assignment"
                     >
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                   )}
                 </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-text-secondary mb-6 font-medium">
-                  <span className="flex items-center gap-2"><div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-xs font-bold text-slate-600">{classroom?.teacher?.name?.[0]}</div> {classroom?.teacher?.name || 'Teacher'}</span>
-                  <span>•</span>
-                  <span>Posted {new Date(assignment.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric'})}</span>
-                  <span className="ml-auto flex items-center gap-2 bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200">
-                    <span className={`w-2 h-2 rounded-full ${isExpired ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
-                    <span className={`font-bold tracking-wide ${isExpired ? 'text-red-600' : 'text-text-main'}`}>
-                      {assignment.due_date ? `Due ${new Date(assignment.due_date).toLocaleDateString()}` : 'No due date'}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-3 text-xs md:text-sm text-text-secondary mb-6 font-medium">
+                  <span className="flex items-center gap-2"><div className="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600">{classroom?.teacher?.name?.[0]}</div> {classroom?.teacher?.name || 'Teacher'}</span>
+                  <span className="hidden sm:inline opacity-30">•</span>
+                  <span>Posted {new Date(assignment.created_at).toLocaleDateString()}</span>
+                  <div className="md:ml-auto w-full md:w-auto">
+                    <span className={`inline-flex items-center gap-2 bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200 ${isExpired ? 'border-red-200 bg-red-50' : ''}`}>
+                      <span className={`w-2 h-2 rounded-full ${isExpired ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
+                      <span className={`font-bold tracking-wide ${isExpired ? 'text-red-600' : 'text-text-main'}`}>
+                        {assignment.due_date ? `Due ${new Date(assignment.due_date).toLocaleDateString()}` : 'No due date'}
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </div>
-                <div className="prose max-w-none text-text-main text-[17px] leading-relaxed bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+                <div className="prose max-w-none text-text-main text-base md:text-[17px] leading-relaxed bg-slate-50/50 p-4 md:p-6 rounded-2xl border border-slate-100">
                   {assignment.description ? (
                     <p className="whitespace-pre-wrap">{assignment.description}</p>
                   ) : (

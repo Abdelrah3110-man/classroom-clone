@@ -11,18 +11,12 @@ class ClassroomApiController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = $request->input('user_id') ?? Auth::id() ?? 1;
-
-        // Fetch classrooms where user is teacher OR user is a student
+        // Fetch all classrooms with teacher and nested relationships
         $classrooms = Classroom::with([
             'teacher',
             'students',
             'assignments.submissions'
         ])
-        ->where('teacher_id', $userId)
-        ->orWhereHas('students', function($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
         ->latest()
         ->get();
         

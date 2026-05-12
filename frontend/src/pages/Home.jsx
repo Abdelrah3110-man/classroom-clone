@@ -78,14 +78,27 @@ const Dashboard = () => {
     );
   }
 
-  // Calculate Stats
-  const totalClasses = classrooms.length;
+  // Categorize Classes
+  const teachingClasses = classrooms.filter(c => String(c.teacher_id) === String(user?.id));
+  const enrolledClasses = classrooms.filter(c => c.students?.some(s => String(s.id) === String(user?.id)) && String(c.teacher_id) !== String(user?.id));
+  const availableClasses = classrooms.filter(c => String(c.teacher_id) !== String(user?.id) && !c.students?.some(s => String(s.id) === String(user?.id)));
+
+  const handleJoinByCodeDirect = async (code) => {
+    try {
+      const res = await api.post('/classrooms/join', { code, user_id: user?.id });
+      setClassrooms(prev => [res.data.classroom, ...prev.filter(c => c.id !== res.data.classroom.id)]);
+      alert("Successfully joined class!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to join class.");
+    }
+  };
+
+  // Calculate Global Stats
   const totalAssignments = classrooms.reduce((acc, curr) => acc + (curr.assignments?.length || 0), 0);
   const totalSubmissions = classrooms.reduce((acc, curr) => {
     const classSubmissions = curr.assignments?.reduce((a, c) => a + (c.submissions?.length || 0), 0) || 0;
     return acc + classSubmissions;
   }, 0);
-  const totalStudents = classrooms.reduce((acc, curr) => acc + (curr.students?.length || 0), 0);
 
   const selectedClass = classrooms.find(c => `class-${c.id}` === selectedClassId);
 
@@ -94,8 +107,8 @@ const Dashboard = () => {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-text-main tracking-tight">Global Dashboard</h1>
-          <p className="text-text-secondary mt-2 text-lg">Overview of all your classrooms and activities</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-text-main tracking-tight">fci Class room</h1>
+          <p className="text-text-secondary mt-2 text-lg">Welcome back, <span className="text-primary font-bold">{user?.name}</span></p>
         </div>
         <div className="flex flex-wrap gap-4">
           <button 
@@ -103,14 +116,14 @@ const Dashboard = () => {
             onClick={() => { setModalType('join'); setShowModal(true); }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-            Join Class
+            Join with Code
           </button>
           <button 
             className="btn-primary flex items-center gap-2"
             onClick={() => { setModalType('create'); setShowModal(true); }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            New Class
+            Create New Class
           </button>
         </div>
       </header>
@@ -119,122 +132,175 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-slide-up">
         <div className="glass p-6 rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
-          <h3 className="text-4xl font-extrabold text-primary mb-2 relative z-10">{totalClasses}</h3>
-          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Total Classes</p>
+          <h3 className="text-4xl font-extrabold text-primary mb-1 relative z-10">{teachingClasses.length}</h3>
+          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Teaching</p>
         </div>
         <div className="glass p-6 rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
-          <h3 className="text-4xl font-extrabold text-green-500 mb-2 relative z-10">{totalAssignments}</h3>
-          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Assignments</p>
+          <h3 className="text-4xl font-extrabold text-green-500 mb-1 relative z-10">{enrolledClasses.length}</h3>
+          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Enrolled</p>
         </div>
         <div className="glass p-6 rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
-          <h3 className="text-4xl font-extrabold text-yellow-500 mb-2 relative z-10">{totalSubmissions}</h3>
-          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Submissions</p>
+          <h3 className="text-4xl font-extrabold text-yellow-500 mb-1 relative z-10">{totalAssignments}</h3>
+          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Total Tasks</p>
         </div>
-        <div className="glass p-6 rounded-3xl relative overflow-hidden group">
+        <div className="glass p-4 md:p-6 rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
-          <h3 className="text-4xl font-extrabold text-pink-500 mb-2 relative z-10">{totalStudents}</h3>
-          <p className="text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Total Students</p>
+          <h3 className="text-3xl md:text-4xl font-extrabold text-pink-500 mb-1 relative z-10">{totalSubmissions}</h3>
+          <p className="text-xs md:text-sm font-bold text-text-secondary uppercase tracking-widest relative z-10">Submissions</p>
         </div>
       </div>
 
-      {/* Class Selector Section */}
-      <div className="glass p-8 mb-10 rounded-3xl flex flex-col md:flex-row items-center gap-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+      {/* Workspace Selector */}
+      <div className="glass p-8 mb-12 rounded-[2rem] flex flex-col md:flex-row items-center gap-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
         <label className="text-lg font-bold text-text-main whitespace-nowrap flex items-center gap-3">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-          Filter Workspace:
+          Quick Jump:
         </label>
         <select 
           value={selectedClassId}
           onChange={(e) => setSelectedClassId(e.target.value)}
-          className="w-full md:w-80 p-3.5 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200 outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary font-semibold text-text-main shadow-sm transition-all"
+          className="w-full md:w-80 p-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200 outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary font-bold text-text-main shadow-sm transition-all"
         >
-          <option value="">All Classes Overview</option>
-          {classrooms.map(c => (
-            <option key={c.id} value={`class-${c.id}`}>{c.name}</option>
-          ))}
+          <option value="">Dashboard Overview</option>
+          <optgroup label="Teaching">
+            {teachingClasses.map(c => <option key={c.id} value={`class-${c.id}`}>{c.name}</option>)}
+          </optgroup>
+          <optgroup label="Enrolled">
+            {enrolledClasses.map(c => <option key={c.id} value={`class-${c.id}`}>{c.name}</option>)}
+          </optgroup>
         </select>
       </div>
 
-      {/* Main View Area */}
+      {/* Categorized View */}
       {!selectedClassId ? (
-        <div className="space-y-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
-          <h2 className="text-2xl font-bold text-text-main mb-6">Classes Overview</h2>
-          {classrooms.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {classrooms.map((classroom, i) => (
-                <div key={classroom.id} style={{ animationDelay: `${i * 100}ms` }} className="animate-fade-in">
-                  <ClassCard classroom={classroom} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-24 glass rounded-3xl border-dashed">
-              <div className="text-6xl mb-6 opacity-80">🎓</div>
-              <h3 className="text-2xl font-bold text-text-main">No classes found</h3>
-              <p className="text-text-secondary mt-2">Create your first class to see it here!</p>
-            </div>
+        <div className="space-y-16 animate-slide-up" style={{ animationDelay: '200ms' }}>
+          
+          {/* Teaching Section */}
+          {teachingClasses.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-extrabold text-text-main mb-8 flex items-center gap-3">
+                <span className="w-2 h-8 bg-primary rounded-full"></span>
+                Classes You Teach
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {teachingClasses.map((classroom, i) => (
+                  <ClassCard key={classroom.id} classroom={classroom} />
+                ))}
+              </div>
+            </section>
           )}
+
+          {/* Enrolled Section */}
+          {enrolledClasses.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-extrabold text-text-main mb-8 flex items-center gap-3">
+                <span className="w-2 h-8 bg-green-500 rounded-full"></span>
+                Classes You've Joined
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {enrolledClasses.map((classroom, i) => (
+                  <ClassCard key={classroom.id} classroom={classroom} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Explore Section */}
+          <section className="pt-8 border-t border-slate-100">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+              <h2 className="text-2xl font-extrabold text-text-main flex items-center gap-3">
+                <span className="w-2 h-8 bg-slate-300 rounded-full"></span>
+                Explore Other Classes
+              </h2>
+              <p className="text-sm text-text-secondary font-medium">Join public classes in your workspace</p>
+            </div>
+            {availableClasses.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {availableClasses.map((classroom, i) => (
+                  <ClassCard key={classroom.id} classroom={classroom} onJoin={handleJoinByCodeDirect} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                <p className="text-text-secondary font-medium italic">No other classes available to join right now.</p>
+              </div>
+            )}
+          </section>
+
         </div>
       ) : (
         <div className="animate-fade-in">
           {selectedClass && (
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
               <div className="space-y-6">
-                <div className="glass p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+                <div className="glass p-10 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
                   <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, ${selectedClass.banner_color || '#6366f1'} 0%, transparent 100%)`}}></div>
                   <div className="relative z-10">
-                    <h2 className="text-4xl font-extrabold text-text-main mb-2">{selectedClass.name}</h2>
-                    <p className="text-text-secondary font-medium text-lg">{selectedClass.section} • {selectedClass.subject}</p>
+                    <div className="flex items-center gap-3 mb-4">
+                       <span className={`px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest text-white shadow-sm ${String(user?.id) === String(selectedClass.teacher_id) ? 'bg-primary' : 'bg-green-500'}`}>
+                          {String(user?.id) === String(selectedClass.teacher_id) ? 'Teaching' : 'Enrolled'}
+                       </span>
+                       <span className="bg-slate-100 text-slate-500 px-4 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest">
+                          {selectedClass.section}
+                       </span>
+                    </div>
+                    <h2 className="text-5xl font-extrabold text-text-main mb-2 tracking-tight">{selectedClass.name}</h2>
+                    <p className="text-text-secondary font-bold text-lg">{selectedClass.subject}</p>
                   </div>
                   <Link 
                     to={`/class/${selectedClass.id}`}
-                    className="btn-primary whitespace-nowrap relative z-10 text-lg px-8 py-3"
+                    className="btn-primary whitespace-nowrap relative z-10 text-xl px-10 py-4 shadow-xl"
                   >
-                    Enter Classroom
+                    Enter Workspace
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-3 gap-6">
-                  <div className="glass p-6 rounded-3xl text-center shadow-sm hover:-translate-y-1 transition-transform">
-                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3 text-xl">👥</div>
-                    <h4 className="text-2xl font-bold text-text-main">{selectedClass.students?.length || 0}</h4>
-                    <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mt-1">Students</p>
+                  <div className="glass p-8 rounded-[2rem] text-center shadow-sm hover:-translate-y-2 transition-all duration-300 border-b-4 border-primary">
+                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">👥</div>
+                    <h4 className="text-3xl font-extrabold text-text-main">{selectedClass.students?.length || 0}</h4>
+                    <p className="text-[10px] text-text-secondary font-black uppercase tracking-[0.2em] mt-2">Active Students</p>
                   </div>
-                  <div className="glass p-6 rounded-3xl text-center shadow-sm hover:-translate-y-1 transition-transform">
-                    <div className="w-12 h-12 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">📝</div>
-                    <h4 className="text-2xl font-bold text-text-main">{selectedClass.assignments?.length || 0}</h4>
-                    <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mt-1">Assignments</p>
+                  <div className="glass p-8 rounded-[2rem] text-center shadow-sm hover:-translate-y-2 transition-all duration-300 border-b-4 border-green-500">
+                    <div className="w-14 h-14 bg-green-500/10 text-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">📝</div>
+                    <h4 className="text-3xl font-extrabold text-text-main">{selectedClass.assignments?.length || 0}</h4>
+                    <p className="text-[10px] text-text-secondary font-black uppercase tracking-[0.2em] mt-2">Tasks Posted</p>
                   </div>
-                  <div className="glass p-6 rounded-3xl text-center shadow-sm hover:-translate-y-1 transition-transform">
-                    <div className="w-12 h-12 bg-yellow-500/10 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">✅</div>
-                    <h4 className="text-2xl font-bold text-text-main">
+                  <div className="glass p-8 rounded-[2rem] text-center shadow-sm hover:-translate-y-2 transition-all duration-300 border-b-4 border-yellow-500">
+                    <div className="w-14 h-14 bg-yellow-500/10 text-yellow-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">✅</div>
+                    <h4 className="text-3xl font-extrabold text-text-main">
                       {selectedClass.assignments?.reduce((a, c) => a + (c.submissions?.length || 0), 0) || 0}
                     </h4>
-                    <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mt-1">Submissions</p>
+                    <p className="text-[10px] text-text-secondary font-black uppercase tracking-[0.2em] mt-2">Total Hand-ins</p>
                   </div>
                 </div>
               </div>
 
               <aside className="space-y-6">
-                <div className="glass p-8 rounded-3xl">
-                  <h4 className="font-extrabold text-text-main mb-6 flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    Recent Assignments
+                <div className="glass p-8 rounded-[2rem]">
+                  <h4 className="font-extrabold text-text-main mb-8 flex items-center gap-3 text-lg">
+                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    Recent Tasks
                   </h4>
                   {selectedClass.assignments?.length > 0 ? (
                     <div className="space-y-4">
                       {selectedClass.assignments.slice(0, 5).map(a => (
-                        <Link to={`/class/${selectedClass.id}/assignments/${a.id}`} key={a.id} className="block p-4 rounded-2xl bg-white/50 hover:bg-white transition-colors border border-slate-100 shadow-sm hover:shadow-md">
-                          <p className="font-bold text-sm text-text-main truncate">{a.title}</p>
-                          <p className="text-xs text-text-secondary font-medium mt-1">Due {new Date(a.due_date).toLocaleDateString()}</p>
+                        <Link to={`/class/${selectedClass.id}/assignments/${a.id}`} key={a.id} className="block p-5 rounded-2xl bg-white/50 hover:bg-white transition-all border border-slate-100 shadow-sm hover:shadow-lg group">
+                          <p className="font-extrabold text-sm text-text-main truncate group-hover:text-primary transition-colors">{a.title}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                             <p className="text-[11px] text-text-secondary font-bold uppercase tracking-wider">Due {new Date(a.due_date).toLocaleDateString()}</p>
+                          </div>
                         </Link>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                      <p className="text-sm text-text-secondary italic">No assignments yet.</p>
+                    <div className="p-8 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 text-center">
+                      <p className="text-sm text-text-secondary font-medium italic">No assignments listed yet.</p>
                     </div>
                   )}
                 </div>
@@ -248,7 +314,7 @@ const Dashboard = () => {
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[1000] p-4 animate-fade-in">
           <div className="w-full max-w-md glass rounded-[2rem] shadow-2xl p-10 animate-slide-up" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
               <h2 className="text-3xl font-extrabold text-text-main">{modalType === 'create' ? 'Create Class' : 'Join Class'}</h2>
               <button onClick={() => setShowModal(false)} className="p-2 text-text-secondary hover:text-red-500 bg-slate-100 hover:bg-red-50 rounded-full transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
