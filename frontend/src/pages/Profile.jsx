@@ -41,16 +41,11 @@ const Profile = () => {
       localStorage.setItem('user', JSON.stringify(res.data.user));
       showToast('Profile updated successfully!', 'success');
     } catch (err) {
-      console.error("FULL ERROR OBJECT:", err);
       if (err.response) {
-        console.error("Error Response Data:", err.response.data);
-        console.error("Error Status:", err.response.status);
         setError(`Server Error (${err.response.status}): ${err.response.data.message || 'Unknown error'}`);
       } else if (err.request) {
-        console.error("No Response Received. Request object:", err.request);
         setError("Network Error: No response from server. Check if backend is running on port 8080.");
       } else {
-        console.error("Request Setup Error:", err.message);
         setError(`Request Error: ${err.message}`);
       }
     } finally {

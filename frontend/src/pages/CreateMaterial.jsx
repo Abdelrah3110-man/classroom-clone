@@ -25,7 +25,7 @@ const CreateMaterial = () => {
       const res = await api.get(`/classrooms/${id}`);
       setClassroom(res.data);
     } catch (err) {
-      console.error("Error fetching classroom:", err);
+      // Classroom fetch error
     }
   };
 
@@ -61,7 +61,6 @@ const CreateMaterial = () => {
       navigate(`/class/${id}`);
     } catch (err) {
       showToast("Failed to create material.", "error");
-      console.error(err);
     } finally {
       setLoading(false);
     }

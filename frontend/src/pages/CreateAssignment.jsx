@@ -26,7 +26,7 @@ const CreateAssignment = () => {
       const res = await api.get(`/classrooms/${id}`);
       setClassroom(res.data);
     } catch (err) {
-      console.error("Error fetching classroom:", err);
+      // Classroom fetch error
     }
   };
 
@@ -63,7 +63,6 @@ const CreateAssignment = () => {
       navigate(`/class/${id}`);
     } catch (err) {
       showToast("Failed to create assignment.", "error");
-      console.error(err);
     } finally {
       setLoading(false);
     }

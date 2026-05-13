@@ -38,7 +38,7 @@ const Dashboard = () => {
       const res = await api.get(`/classrooms?user_id=${user?.id}`);
       setClassrooms(res.data);
     } catch (err) {
-      console.error("Error fetching classrooms:", err);
+      // Dashboard error
     } finally {
       setLoading(false);
     }

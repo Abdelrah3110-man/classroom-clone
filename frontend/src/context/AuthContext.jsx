@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       showToast("Login Error: " + message, "error");
-      console.error("Login error", err);
       return null;
     }
   };
@@ -40,7 +39,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       return userData;
     } catch (err) {
-      console.error("Register error", err);
       const message = err.response?.data?.message || err.message || "Unknown error";
       showToast("Register Error: " + message, "error");
       return null;
@@ -51,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post('/logout');
     } catch (err) {
-      console.error("Logout error", err);
+      // Logout error
     }
     setUser(null);
     localStorage.removeItem('user');

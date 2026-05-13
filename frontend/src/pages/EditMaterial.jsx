@@ -38,8 +38,7 @@ const EditMaterial = () => {
         subject_id: resMat.data.subject_id || ''
       });
     } catch (err) {
-      console.error("Error fetching material data:", err);
-      showToast("Failed to load material data.", "error");
+      showToast("Failed to load material.", "error");
     } finally {
       setLoading(false);
     }
@@ -77,7 +76,6 @@ const EditMaterial = () => {
       navigate(`/class/${id}/materials/${materialId}`);
     } catch (err) {
       showToast("Failed to update material.", "error");
-      console.error(err);
     } finally {
       setSaving(false);
     }

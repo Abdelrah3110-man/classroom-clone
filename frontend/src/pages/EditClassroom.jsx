@@ -38,8 +38,7 @@ const EditClassroom = () => {
         room: res.data.room || ''
       });
     } catch (err) {
-      console.error(err);
-      showToast("Error fetching classroom details", "error");
+      showToast("Failed to fetch classroom", "error");
     } finally {
       setLoading(false);
     }
@@ -56,8 +55,7 @@ const EditClassroom = () => {
       await api.put(`/classrooms/${id}`, formData);
       navigate(`/class/${id}`);
     } catch (err) {
-      console.error(err);
-      showToast("Failed to update classroom.", "error");
+      showToast("Failed to fetch classroom", "error");
     } finally {
       setSaving(false);
     }

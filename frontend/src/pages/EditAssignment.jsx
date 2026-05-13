@@ -40,7 +40,6 @@ const EditAssignment = () => {
         subject_id: resAssign.data.subject_id || ''
       });
     } catch (err) {
-      console.error("Error fetching assignment data:", err);
       showToast("Failed to load assignment data.", "error");
     } finally {
       setLoading(false);
@@ -81,7 +80,6 @@ const EditAssignment = () => {
       navigate(`/class/${id}/assignments/${assignmentId}`);
     } catch (err) {
       showToast("Failed to update assignment.", "error");
-      console.error(err);
     } finally {
       setSaving(false);
     }

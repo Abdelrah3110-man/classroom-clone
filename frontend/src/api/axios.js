@@ -13,7 +13,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 422) {
-      console.error("Validation Errors:", error.response.data.errors);
+      // Validation errors handled by UI
     }
     return Promise.reject(error);
   },

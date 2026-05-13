@@ -29,7 +29,7 @@ const AssignmentDetails = () => {
       const resAssignment = await api.get(`/assignments/${assignmentId}`);
       setAssignment(resAssignment.data);
     } catch (err) {
-      console.error("Error fetching assignment:", err);
+      // Error fetching assignment
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,6 @@ const AssignmentDetails = () => {
       await fetchData();
     } catch (err) {
       showToast("Failed to submit work.", "error");
-      console.error(err);
     } finally {
       setSubmitting(false);
     }

@@ -26,7 +26,7 @@ const ClassDetails = () => {
       const res = await api.get(`/classrooms/${id}`);
       setClassroom(res.data);
     } catch (err) {
-      console.error("Error fetching classroom:", err);
+      // Error fetching classroom
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ const ClassDetails = () => {
       setClassroom({ ...classroom, posts: updatedPosts });
       setCommentText({ ...commentText, [postId]: '' });
     } catch (err) {
-      console.error("Failed to post comment");
+      // Comment error
     }
   };
 

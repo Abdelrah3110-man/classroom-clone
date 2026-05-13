@@ -26,7 +26,7 @@ const MaterialDetails = () => {
       const resMaterial = await api.get(`/materials/${materialId}`);
       setMaterial(resMaterial.data);
     } catch (err) {
-      console.error("Error fetching material:", err);
+      // Error fetching material
     } finally {
       setLoading(false);
     }

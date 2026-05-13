@@ -37,7 +37,7 @@ const Home = () => {
       const res = await api.get(`/classrooms?user_id=${user?.id}`);
       setClassrooms(res.data);
     } catch (err) {
-      console.error("Error fetching classrooms:", err);
+      // Error handled by UI or ignored
     } finally {
       setLoading(false);
     }

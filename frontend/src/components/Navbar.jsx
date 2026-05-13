@@ -24,7 +24,7 @@ const Navbar = () => {
       const res = await api.get(`/classrooms?user_id=${user?.id}`);
       setClassrooms(res.data);
     } catch (err) {
-      console.error(err);
+      // Logout error
     }
   };
 
