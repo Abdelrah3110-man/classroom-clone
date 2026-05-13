@@ -29,8 +29,6 @@ const Profile = () => {
     setSuccess('');
     setError('');
     
-    console.log("Current user in profile:", user);
-    console.log("Sending payload:", { user_id: user?.id, name: formData.name, email: formData.email });
 
     try {
       const res = await api.post('/profile', {
@@ -38,7 +36,6 @@ const Profile = () => {
         name: formData.name,
         email: formData.email
       });
-      console.log("Response from server:", res.data);
       setUser(res.data.user);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       showToast('Profile updated successfully!', 'success');
