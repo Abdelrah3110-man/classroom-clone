@@ -14,6 +14,8 @@ const ClassDetails = () => {
   const [newPost, setNewPost] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [commentText, setCommentText] = useState({});
+  const [filterType, setFilterType] = useState('all'); // 'all', 'assignments', 'materials'
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchClassroom();
@@ -303,9 +305,38 @@ const ClassDetails = () => {
           {activeTab === 'classwork' && (
             <div className="space-y-6 animate-fade-in">
                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 glass p-6 rounded-2xl">
-                 <div>
-                   <h2 className="text-2xl font-bold text-text-main">Classwork</h2>
-                   <p className="text-text-secondary text-sm mt-1">Assignments and study materials</p>
+                 <div className="flex flex-col md:flex-row md:items-center gap-6">
+                   <div>
+                     <h2 className="text-2xl font-bold text-text-main">Classwork</h2>
+                     <p className="text-text-secondary text-sm mt-1">Assignments and study materials</p>
+                   </div>
+
+                   {/* Filter Dropdown */}
+                   <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-3 bg-white/50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all hover:border-primary/30">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-text-secondary"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                       <select 
+                         value={filterType}
+                         onChange={(e) => setFilterType(e.target.value)}
+                         className="bg-transparent text-sm font-bold text-text-main outline-none cursor-pointer pr-2"
+                       >
+                         <option value="all">All Content</option>
+                         <option value="assignments">Assignments</option>
+                         <option value="materials">Materials</option>
+                       </select>
+                     </div>
+
+                     <div className="flex items-center gap-3 bg-white/50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:border-primary/30 focus-within:ring-4 focus-within:ring-primary/5">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-text-secondary"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                       <input 
+                         type="text"
+                         placeholder="Search topics..."
+                         value={searchQuery}
+                         onChange={(e) => setSearchQuery(e.target.value)}
+                         className="bg-transparent text-sm font-bold text-text-main outline-none placeholder:text-slate-400 w-32 md:w-48"
+                       />
+                     </div>
+                   </div>
                  </div>
                  {/* Create Buttons - TEACHER ONLY */}
                  {isTeacher && (
@@ -323,25 +354,37 @@ const ClassDetails = () => {
                </div>
                {(classroom.assignments?.length > 0 || classroom.materials?.length > 0) ? (
                  <div className="space-y-4">
-                    {classroom.assignments?.map(item => (
-                      <Link to={`/class/${id}/assignments/${item.id}`} key={item.id} className="card-premium p-5 flex items-center gap-5 hover:bg-slate-50 transition-colors cursor-pointer group">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">📝</div>
-                        <div className="flex-grow">
-                          <h4 className="font-bold text-text-main text-lg group-hover:text-primary transition-colors">{item.title}</h4>
-                          <span className="text-sm text-text-secondary font-medium">Posted {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
-                        </div>
-                        <div className="text-sm font-bold text-primary bg-primary/5 px-4 py-2 rounded-full">Due {new Date(item.due_date).toLocaleDateString()}</div>
-                      </Link>
-                    ))}
-                    {classroom.materials?.map(item => (
-                      <Link to={`/class/${id}/materials/${item.id}`} key={item.id} className="card-premium p-5 flex items-center gap-5 hover:bg-slate-50 transition-colors cursor-pointer group">
-                        <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-xl group-hover:scale-110 group-hover:-rotate-3 transition-transform shadow-sm">📚</div>
-                        <div className="flex-grow">
-                          <h4 className="font-bold text-text-main text-lg group-hover:text-secondary transition-colors">{item.title}</h4>
-                          <span className="text-sm text-text-secondary font-medium">Posted {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
-                        </div>
-                      </Link>
-                    ))}
+                    {(filterType === 'all' || filterType === 'assignments') && classroom.assignments
+                      ?.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(item => (
+                        <Link to={`/class/${id}/assignments/${item.id}`} key={item.id} className="card-premium p-5 flex items-center gap-5 hover:bg-slate-50 transition-colors cursor-pointer group animate-fade-in">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xl group-hover:scale-110 group-hover:rotate-3 transition-transform shadow-sm">📝</div>
+                          <div className="flex-grow">
+                            <h4 className="font-bold text-text-main text-lg group-hover:text-primary transition-colors">{item.title}</h4>
+                            <span className="text-sm text-text-secondary font-medium">Posted {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
+                          </div>
+                          <div className="text-sm font-bold text-primary bg-primary/5 px-4 py-2 rounded-full">Due {new Date(item.due_date).toLocaleDateString()}</div>
+                        </Link>
+                      ))}
+                    {(filterType === 'all' || filterType === 'materials') && classroom.materials
+                      ?.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(item => (
+                        <Link to={`/class/${id}/materials/${item.id}`} key={item.id} className="card-premium p-5 flex items-center gap-5 hover:bg-slate-50 transition-colors cursor-pointer group animate-fade-in">
+                          <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-xl group-hover:scale-110 group-hover:-rotate-3 transition-transform shadow-sm">📚</div>
+                          <div className="flex-grow">
+                            <h4 className="font-bold text-text-main text-lg group-hover:text-secondary transition-colors">{item.title}</h4>
+                            <span className="text-sm text-text-secondary font-medium">Posted {new Date(item.created_at || Date.now()).toLocaleDateString()}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    {/* Empty search results state */}
+                    {filterType !== 'all' && 
+                     ((filterType === 'assignments' && !classroom.assignments?.some(i => i.title.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+                      (filterType === 'materials' && !classroom.materials?.some(i => i.title.toLowerCase().includes(searchQuery.toLowerCase())))) && (
+                      <div className="p-12 text-center glass rounded-2xl border-dashed">
+                        <p className="text-text-secondary font-medium italic">No matches found for "{searchQuery}" in this category.</p>
+                      </div>
+                    )}
                  </div>
                ) : (
                  <div className="glass p-16 text-center text-text-secondary rounded-3xl border-dashed">
