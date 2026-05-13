@@ -13,6 +13,7 @@ import MaterialDetails from './pages/MaterialDetails'
 import EditMaterial from './pages/EditMaterial'
 import EditClassroom from './pages/EditClassroom'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import { useAuth } from './context/AuthContext'
 
 const PrivateRoute = ({ children }) => {
@@ -25,9 +26,9 @@ function App() {
   const { user } = useAuth();
 
   return (
-    <div className="app">
+    <div className="app min-h-screen flex flex-col">
       {user && <Navbar />}
-      <main className={user ? "container" : ""}>
+      <main className={`${user ? "container mx-auto" : ""} flex-grow`}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -43,6 +44,7 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         </Routes>
       </main>
+      <Footer />
     </div>
   )
 }
