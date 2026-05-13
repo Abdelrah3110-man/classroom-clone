@@ -30,6 +30,7 @@ Route::group([], function () {
     
     // Posts
     Route::post('/posts', [PostApiController::class, 'store']);
+    Route::delete('/posts/{id}', [PostApiController::class, 'destroy']);
 
     // Materials
     Route::get('/materials/{id}', [MaterialApiController::class, 'show']);
@@ -47,6 +48,12 @@ Route::group([], function () {
     Route::post('/comments', [CommentApiController::class, 'store']);
     Route::delete('/comments/{id}', [CommentApiController::class, 'destroy']);
 
+    // Submissions
+    Route::post('/submissions', [\App\Http\Controllers\Api\SubmissionApiController::class, 'store']);
+
     // Tasks (Scaffolded earlier)
     Route::apiResource('tasks', TaskController::class);
+
+    // Profile Delete
+    Route::delete('/profile', [ProfileApiController::class, 'destroy']);
 });

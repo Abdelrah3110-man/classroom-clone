@@ -68,4 +68,22 @@ class ProfileApiController extends Controller
 
         return response()->json(['message' => 'Password updated']);
     }
+
+    public function destroy(Request $request)
+    {
+        try {
+            $userId = $request->input('user_id') ?? Auth::id();
+            $user = \App\Models\User::find($userId);
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+
+            $user->delete();
+
+            return response()->json(['message' => 'Account deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete account: ' . $e->getMessage()], 500);
+        }
+    }
 }

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const EditClassroom = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast, showConfirm } = useNotification();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +27,7 @@ const EditClassroom = () => {
     try {
       const res = await api.get(`/classrooms/${id}`);
       if (res.data.teacher_id !== user?.id) {
-        alert("Unauthorized access");
+        showToast("Unauthorized access", "error");
         navigate(`/class/${id}`);
         return;
       }
@@ -37,7 +39,7 @@ const EditClassroom = () => {
       });
     } catch (err) {
       console.error(err);
-      alert("Error fetching classroom details");
+      showToast("Error fetching classroom details", "error");
     } finally {
       setLoading(false);
     }
@@ -55,22 +57,26 @@ const EditClassroom = () => {
       navigate(`/class/${id}`);
     } catch (err) {
       console.error(err);
-      alert("Failed to update classroom.");
+      showToast("Failed to update classroom.", "error");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this classroom? This action cannot be undone.")) {
-      try {
-        await api.delete(`/classrooms/${id}`);
-        navigate('/');
-      } catch (err) {
-        console.error(err);
-        alert("Failed to delete classroom.");
+  const handleDelete = () => {
+    showConfirm(
+      "Delete Classroom",
+      "Are you sure you want to delete this classroom? This action cannot be undone.",
+      async () => {
+        try {
+          await api.delete(`/classrooms/${id}`);
+          showToast("Classroom deleted successfully", "success");
+          navigate('/');
+        } catch (err) {
+          showToast("Failed to delete classroom.", "error");
+        }
       }
-    }
+    );
   };
 
   if (loading) return (

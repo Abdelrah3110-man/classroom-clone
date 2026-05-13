@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ApplicationLogo from '../components/ui/ApplicationLogo';
@@ -12,6 +13,7 @@ const Register = () => {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const { register } = useAuth();
+  const { showToast } = useNotification();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,14 +21,19 @@ const Register = () => {
     setError('');
 
     if (password !== passwordConfirm) {
+      showToast('Passwords do not match', 'error');
       setError('Passwords do not match');
       return;
     }
-
+    
     try {
-      await register(name, email, password, passwordConfirm);
-      navigate('/');
+      const user = await register(name, email, password, passwordConfirm);
+      if (user) {
+        showToast(`Account created successfully! Welcome, ${user.name}`, 'success');
+        navigate('/');
+      }
     } catch (err) {
+      showToast('Failed to create an account', 'error');
       setError('Failed to create an account');
     }
   };

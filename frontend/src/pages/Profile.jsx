@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { useNotification } from '../context/NotificationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user, setUser, logout } = useAuth();
+  const { showToast, showConfirm } = useNotification();
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -38,7 +41,7 @@ const Profile = () => {
       console.log("Response from server:", res.data);
       setUser(res.data.user);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      setSuccess('Profile updated successfully!');
+      showToast('Profile updated successfully!', 'success');
     } catch (err) {
       console.error("FULL ERROR OBJECT:", err);
       if (err.response) {
@@ -55,6 +58,23 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    showConfirm(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+      async () => {
+        try {
+          await api.delete('/profile', { data: { user_id: user?.id } });
+          showToast("Account deleted successfully", "success");
+          logout();
+          navigate('/login');
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Failed to delete account.', "error");
+        }
+      }
+    );
   };
 
   return (
@@ -77,13 +97,20 @@ const Profile = () => {
              {user?.role}
            </span>
            
-           <div className="border-t border-border pt-6">
+           <div className="border-t border-border pt-6 space-y-3">
              <button 
                onClick={logout}
-               className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-6 py-3 rounded-xl font-bold transition-colors"
+               className="w-full flex items-center justify-center gap-2 bg-slate-100 text-text-main hover:bg-slate-200 px-6 py-3 rounded-xl font-bold transition-colors"
              >
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                Sign Out
+             </button>
+             <button 
+               onClick={handleDeleteAccount}
+               className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-6 py-3 rounded-xl font-bold transition-all border border-red-100"
+             >
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+               Delete Account
              </button>
            </div>
         </div>

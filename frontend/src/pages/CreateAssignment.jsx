@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useNotification } from '../context/NotificationContext';
 
 const CreateAssignment = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { showToast } = useNotification();
   const [classroom, setClassroom] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -38,7 +40,7 @@ const CreateAssignment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title) return alert("Title is required!");
+    if (!formData.title) return showToast("Title is required!", "error");
     
     setLoading(true);
     try {
@@ -57,9 +59,10 @@ const CreateAssignment = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      showToast("Assignment created successfully!", "success");
       navigate(`/class/${id}`);
     } catch (err) {
-      alert("Failed to create assignment.");
+      showToast("Failed to create assignment.", "error");
       console.error(err);
     } finally {
       setLoading(false);

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useNotification } from '../context/NotificationContext';
 
 const EditMaterial = () => {
   const { id, materialId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { showToast } = useNotification();
   const [classroom, setClassroom] = useState(null);
   const [material, setMaterial] = useState(null);
   
@@ -37,7 +39,7 @@ const EditMaterial = () => {
       });
     } catch (err) {
       console.error("Error fetching material data:", err);
-      alert("Failed to load material data.");
+      showToast("Failed to load material data.", "error");
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ const EditMaterial = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title) return alert("Title is required!");
+    if (!formData.title) return showToast("Title is required!", "error");
     
     setSaving(true);
     try {
@@ -71,9 +73,10 @@ const EditMaterial = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      showToast("Material updated successfully!", "success");
       navigate(`/class/${id}/materials/${materialId}`);
     } catch (err) {
-      alert("Failed to update material.");
+      showToast("Failed to update material.", "error");
       console.error(err);
     } finally {
       setSaving(false);

@@ -19,7 +19,7 @@ class CommentApiController extends Controller
         $comment = Comment::create([
             'post_id' => $request->post_id,
             'user_id' => $request->user_id ?? Auth::id() ?? 1,
-            'content' => $request->content,
+            'description' => $request->content,
         ]);
 
         return response()->json($comment->load('user'), 201);

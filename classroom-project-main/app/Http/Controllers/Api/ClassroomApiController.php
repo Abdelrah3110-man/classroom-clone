@@ -58,7 +58,8 @@ class ClassroomApiController extends Controller
             'posts.user', 
             'posts.comments.user',
             'assignments', 
-            'materials'
+            'materials',
+            'students'
         ])->findOrFail($id);
         
         // Add a primary color dynamically if not present

@@ -3,9 +3,11 @@ import api from '../api/axios'
 import ClassCard from '../components/ClassCard'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useNotification } from '../context/NotificationContext'
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { showToast } = useNotification();
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -51,7 +53,7 @@ const Dashboard = () => {
       setShowModal(false);
       setNewClass({ name: '', section: '', subject: '' });
     } catch (err) {
-      alert("Failed to create class. Error: " + err.message);
+      showToast("Failed to create class: " + err.message, "error");
     }
   };
 
@@ -65,7 +67,7 @@ const Dashboard = () => {
       setJoinCode('');
       alert("Successfully joined class!");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to join class. Check code.");
+      showToast(err.response?.data?.message || "Failed to join class. Check code.", "error");
     }
   };
 
@@ -89,7 +91,7 @@ const Dashboard = () => {
       setClassrooms(prev => [res.data.classroom, ...prev.filter(c => c.id !== res.data.classroom.id)]);
       alert("Successfully joined class!");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to join class.");
+      showToast(err.response?.data?.message || "Failed to join class.", "error");
     }
   };
 
@@ -207,27 +209,7 @@ const Dashboard = () => {
             </section>
           )}
 
-          {/* Explore Section */}
-          <section className="pt-8 border-t border-slate-100">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-              <h2 className="text-2xl font-extrabold text-text-main flex items-center gap-3">
-                <span className="w-2 h-8 bg-slate-300 rounded-full"></span>
-                Explore Other Classes
-              </h2>
-              <p className="text-sm text-text-secondary font-medium">Join public classes in your workspace</p>
-            </div>
-            {availableClasses.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {availableClasses.map((classroom, i) => (
-                  <ClassCard key={classroom.id} classroom={classroom} onJoin={handleJoinByCodeDirect} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
-                <p className="text-text-secondary font-medium italic">No other classes available to join right now.</p>
-              </div>
-            )}
-          </section>
+          {/* Explore Section Removed */}
 
         </div>
       ) : (

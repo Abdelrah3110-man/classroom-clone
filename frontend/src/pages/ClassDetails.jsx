@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
+import { useNotification } from '../context/NotificationContext'
 
 const ClassDetails = () => {
   const { user, loading: authLoading } = useAuth();
+  const { showToast, showConfirm } = useNotification();
   const { id } = useParams();
   const [classroom, setClassroom] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ const ClassDetails = () => {
       setClassroom({ ...classroom, posts: [res.data, ...(classroom.posts || [])] });
       setNewPost('');
     } catch (err) {
-      alert("Failed to post.");
+      showToast("Failed to post.", "error");
     } finally {
       setIsPosting(false);
     }
@@ -70,6 +72,47 @@ const ClassDetails = () => {
     } catch (err) {
       console.error("Failed to post comment");
     }
+  };
+
+  const handleDeletePost = (postId) => {
+    showConfirm(
+      "Delete Post", 
+      "Are you sure you want to delete this post?", 
+      async () => {
+        try {
+          await api.delete(`/posts/${postId}`, { data: { user_id: user?.id } });
+          setClassroom({ 
+            ...classroom, 
+            posts: classroom.posts.filter(p => p.id !== postId) 
+          });
+          showToast("Post deleted successfully", "success");
+        } catch (err) {
+          showToast("Failed to delete post.", "error");
+        }
+      }
+    );
+  };
+
+  const handleDeleteComment = (postId, commentId) => {
+    showConfirm(
+      "Delete Comment",
+      "Are you sure you want to delete this comment?",
+      async () => {
+        try {
+          await api.delete(`/comments/${commentId}`, { data: { user_id: user?.id } });
+          const updatedPosts = classroom.posts.map(p => {
+            if (p.id === postId) {
+              return { ...p, comments: p.comments.filter(c => c.id !== commentId) };
+            }
+            return p;
+          });
+          setClassroom({ ...classroom, posts: updatedPosts });
+          showToast("Comment deleted successfully", "success");
+        } catch (err) {
+          showToast("Failed to delete comment.", "error");
+        }
+      }
+    );
   };
 
   const isTeacher = classroom && user && String(classroom.teacher_id) === String(user.id);
@@ -185,10 +228,19 @@ const ClassDetails = () => {
                     <div key={post.id} className="card-premium p-6" style={{ animationDelay: `${i * 100}ms` }}>
                       <div className="flex gap-4 mb-5">
                         <div className="avatar-circle w-11 h-11 text-sm shadow-md">{post.user?.name?.[0]}</div>
-                        <div>
+                        <div className="flex-grow">
                           <span className="block font-bold text-text-main text-[15px]">{post.user?.name}</span>
                           <span className="text-xs text-text-secondary font-medium">{new Date(post.created_at).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                         </div>
+                        {(isTeacher || String(post.user_id) === String(user?.id)) && (
+                          <button 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                            title="Delete Post"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                          </button>
+                        )}
                       </div>
                       <div className="text-[16px] leading-relaxed text-text-main mb-6 whitespace-pre-wrap">
                         {post.description || post.content}
@@ -202,9 +254,18 @@ const ClassDetails = () => {
                                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm">
                                   {comment.user?.name?.[0]}
                                 </div>
-                                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm shadow-sm flex-grow">
+                                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm shadow-sm flex-grow relative group/comment">
                                   <span className="font-bold text-text-main mr-2">{comment.user?.name}</span>
-                                  <span className="text-text-secondary">{comment.content}</span>
+                                  <span className="text-text-secondary">{comment.content || comment.description}</span>
+                                  {(isTeacher || String(comment.user_id) === String(user?.id)) && (
+                                    <button 
+                                      onClick={() => handleDeleteComment(post.id, comment.id)}
+                                      className="absolute -right-2 -top-2 w-6 h-6 bg-white border border-red-100 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover/comment:opacity-100 transition-opacity hover:bg-red-50"
+                                      title="Delete Comment"
+                                    >
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             ))}

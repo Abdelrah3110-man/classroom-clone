@@ -1,11 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../api/axios';
+import { useNotification } from './NotificationContext';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useNotification();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -24,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (err) {
       const message = err.response?.data?.message || err.message;
-      alert("Login Error: " + message);
+      showToast("Login Error: " + message, "error");
       console.error("Login error", err);
       return null;
     }
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Register error", err);
       const message = err.response?.data?.message || err.message || "Unknown error";
-      alert("Register Error: " + message);
+      showToast("Register Error: " + message, "error");
       return null;
     }
   };

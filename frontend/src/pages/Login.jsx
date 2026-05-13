@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ApplicationLogo from '../components/ui/ApplicationLogo';
@@ -10,15 +11,20 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { showToast } = useNotification();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
-      navigate('/');
+      const user = await login(email, password);
+      if (user) {
+        showToast(`Welcome back, ${user.name}!`, 'success');
+        navigate('/');
+      }
     } catch (err) {
+      showToast('Invalid email or password', 'error');
       setError('Invalid email or password');
     }
   };

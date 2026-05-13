@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useNotification } from '../context/NotificationContext';
 
 const EditAssignment = () => {
   const { id, assignmentId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { showToast } = useNotification();
   const [classroom, setClassroom] = useState(null);
   const [assignment, setAssignment] = useState(null);
   
@@ -39,7 +41,7 @@ const EditAssignment = () => {
       });
     } catch (err) {
       console.error("Error fetching assignment data:", err);
-      alert("Failed to load assignment data.");
+      showToast("Failed to load assignment data.", "error");
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ const EditAssignment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title) return alert("Title is required!");
+    if (!formData.title) return showToast("Title is required!", "error");
     
     setSaving(true);
     try {
@@ -75,9 +77,10 @@ const EditAssignment = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      showToast("Assignment updated successfully!", "success");
       navigate(`/class/${id}/assignments/${assignmentId}`);
     } catch (err) {
-      alert("Failed to update assignment.");
+      showToast("Failed to update assignment.", "error");
       console.error(err);
     } finally {
       setSaving(false);
