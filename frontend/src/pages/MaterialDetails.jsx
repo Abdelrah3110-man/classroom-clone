@@ -67,6 +67,11 @@ const MaterialDetails = () => {
   );
 
   const isTeacher = classroom?.teacher_id === user?.id;
+  const isImage = (filePath) => {
+    const ext = filePath.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext);
+  };
+  const STORAGE_URL = "http://127.0.0.1:8080/storage/";
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 animate-fade-in">
@@ -125,22 +130,44 @@ const MaterialDetails = () => {
         {material.attachments?.length > 0 && (
           <div className="pt-6">
             <h3 className="font-bold text-text-main mb-4">Attachments</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {material.attachments.map(file => (
-                <a 
-                  key={file.id} 
-                  href={`http://127.0.0.1:8080/storage/${file.file_path}`} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="flex items-center gap-3 p-4 bg-bg border border-border rounded-xl hover:shadow-md transition-shadow group"
-                >
-                  <div className="w-10 h-10 bg-white text-blue-500 rounded-lg flex items-center justify-center font-bold text-xs uppercase group-hover:scale-110 transition-transform shadow-sm">
-                    {file.file_path.split('.').pop()}
+                <div key={file.id} className="group flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                  {isImage(file.file_path) ? (
+                    <div className="h-40 overflow-hidden bg-slate-100 relative">
+                      <img 
+                        src={`${STORAGE_URL}${file.file_path}`} 
+                        alt="Attachment" 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <a href={`${STORAGE_URL}${file.file_path}`} target="_blank" rel="noreferrer" className="p-2 bg-white rounded-full text-primary shadow-lg">
+                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-40 bg-slate-50 flex items-center justify-center relative group-hover:bg-primary/5 transition-colors">
+                      <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center font-black text-lg uppercase">
+                        {file.file_path.split('.').pop()}
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-text-main truncate">{file.file_path.split('/').pop()}</p>
+                      <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mt-0.5">{file.file_path.split('.').pop()} File</p>
+                    </div>
+                    <a 
+                      href={`${STORAGE_URL}${file.file_path}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="p-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12"></path></svg>
+                    </a>
                   </div>
-                  <div className="overflow-hidden flex-grow">
-                    <p className="text-sm font-bold text-text-main truncate">{file.file_path.split('/').pop()}</p>
-                  </div>
-                </a>
+                </div>
               ))}
             </div>
           </div>

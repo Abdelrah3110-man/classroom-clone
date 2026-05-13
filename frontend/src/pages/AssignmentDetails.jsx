@@ -123,6 +123,11 @@ const AssignmentDetails = () => {
   const isTeacher = classroom?.teacher_id === user?.id;
   const isExpired = assignment.due_date && new Date() > new Date(assignment.due_date);
   const mySubmission = assignment.submissions?.find(sub => sub.user_id === user?.id);
+  const isImage = (filePath) => {
+    const ext = filePath.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext);
+  };
+  const STORAGE_URL = "http://127.0.0.1:8080/storage/";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 animate-fade-in">
@@ -198,23 +203,44 @@ const AssignmentDetails = () => {
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                   Reference Materials
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {assignment.attachments.map(file => (
-                    <a 
-                      key={file.id} 
-                      href={`http://127.0.0.1:8080/storage/${file.file_path}`} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:shadow-md hover:border-primary/30 transition-all group"
-                    >
-                      <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-bold text-sm uppercase group-hover:scale-110 transition-transform">
-                        {file.file_path.split('.').pop()}
+                    <div key={file.id} className="group flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                      {isImage(file.file_path) ? (
+                        <div className="h-40 overflow-hidden bg-slate-100 relative">
+                          <img 
+                            src={`${STORAGE_URL}${file.file_path}`} 
+                            alt="Attachment" 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <a href={`${STORAGE_URL}${file.file_path}`} target="_blank" rel="noreferrer" className="p-2 bg-white rounded-full text-primary shadow-lg">
+                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-40 bg-slate-50 flex items-center justify-center relative group-hover:bg-primary/5 transition-colors">
+                          <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center font-black text-lg uppercase">
+                            {file.file_path.split('.').pop()}
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-4 flex items-center justify-between gap-3">
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-bold text-text-main truncate">{file.file_path.split('/').pop()}</p>
+                          <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest mt-0.5">{file.file_path.split('.').pop()} File</p>
+                        </div>
+                        <a 
+                          href={`${STORAGE_URL}${file.file_path}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="p-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 3v12"></path></svg>
+                        </a>
                       </div>
-                      <div className="overflow-hidden flex-grow">
-                        <p className="text-[15px] font-bold text-text-main truncate group-hover:text-primary transition-colors">{file.file_path.split('/').pop()}</p>
-                        <p className="text-xs text-text-secondary uppercase tracking-wider font-medium mt-0.5">{file.file_path.split('.').pop()} Document</p>
-                      </div>
-                    </a>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -242,15 +268,22 @@ const AssignmentDetails = () => {
                     <span className="font-bold text-lg">Work submitted successfully!</span>
                   </div>
                   {mySubmission.file && (
-                    <a 
-                      href={`http://127.0.0.1:8080/storage/${mySubmission.file}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-center gap-3 w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-text-main hover:border-primary hover:text-primary hover:shadow-md transition-all group"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-                      View Submitted File
-                    </a>
+                    <div className="space-y-4">
+                      {isImage(mySubmission.file) && (
+                        <div className="rounded-2xl overflow-hidden border border-slate-200 aspect-video">
+                          <img src={`${STORAGE_URL}${mySubmission.file}`} className="w-full h-full object-cover" alt="Submission" />
+                        </div>
+                      )}
+                      <a 
+                        href={`${STORAGE_URL}${mySubmission.file}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-3 w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-text-main hover:border-primary hover:text-primary hover:shadow-md transition-all group"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:scale-110 transition-transform"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                        View Submitted File
+                      </a>
+                    </div>
                   )}
                   <button 
                     onClick={handleUnsubmitWork}
@@ -314,15 +347,22 @@ const AssignmentDetails = () => {
                         </div>
                       </div>
                       {sub.file && (
-                        <a 
-                          href={`http://127.0.0.1:8080/storage/${sub.file}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="w-10 h-10 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center hover:bg-secondary hover:text-white transition-all shadow-sm"
-                          title="View Submission"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-                        </a>
+                        <div className="flex gap-2">
+                           {isImage(sub.file) && (
+                              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-100 hidden sm:block">
+                                <img src={`${STORAGE_URL}${sub.file}`} className="w-full h-full object-cover" />
+                              </div>
+                           )}
+                          <a 
+                            href={`${STORAGE_URL}${sub.file}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-10 h-10 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center hover:bg-secondary hover:text-white transition-all shadow-sm"
+                            title="View Submission"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                          </a>
+                        </div>
                       )}
                     </div>
                   ))
