@@ -8,7 +8,7 @@ const ApplicationLogo = ({ className = '', ...props }) => {
         fci
       </span>
       <span className="text-text-main font-semibold text-xl">
-        Class room
+        Classroom
       </span>
     </div>
   );

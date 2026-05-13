@@ -128,7 +128,7 @@ const Navbar = () => {
                 <Link to="/?action=create" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 font-bold text-text-main transition-colors">
                   <span className="text-xl">🛠️</span> Create Class
                 </Link>
-                <Link to="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 font-bold text-text-main transition-colors">
+                <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 font-bold text-text-main transition-colors">
                   <span className="text-xl">📊</span> Dashboard
                 </Link>
               </div>

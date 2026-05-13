@@ -5,7 +5,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="w-full py-12 px-6 mt-auto border-t border-slate-200 bg-white/50 backdrop-blur-md relative overflow-hidden">
+    <footer className="w-full py-12 px-6 mt-auto border-t border-slate-200 bg-white/50 backdrop-blur-md relative z-0 overflow-hidden">
       {/* Decorative gradients */}
       <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2"></div>
       <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-3xl translate-y-1/2"></div>

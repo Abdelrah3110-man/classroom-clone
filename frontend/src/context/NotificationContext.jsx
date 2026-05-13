@@ -33,7 +33,7 @@ export const NotificationProvider = ({ children }) => {
       {children}
       
       {/* Premium Toaster (Stackable) */}
-      <div className="fixed top-8 right-8 z-[3000] flex flex-col gap-3 pointer-events-none">
+      <div className="fixed top-8 right-8 z-[9999] flex flex-col gap-3 pointer-events-none">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -71,7 +71,7 @@ export const NotificationProvider = ({ children }) => {
       {/* Confirmation Modal */}
       <AnimatePresence>
         {modal && (
-          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Profile = () => {
   const { user, setUser, logout } = useAuth();

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Dashboard from './pages/Home'
+import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
 import ClassDetails from './pages/ClassDetails'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -28,11 +29,12 @@ function App() {
   return (
     <div className="app min-h-screen flex flex-col">
       {user && <Navbar />}
-      <main className={`${user ? "container mx-auto" : ""} flex-grow`}>
+      <main className={`${user ? "container mx-auto" : ""} flex-grow relative z-10`}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/class/:id" element={<PrivateRoute><ClassDetails /></PrivateRoute>} />
           <Route path="/class/:id/edit" element={<PrivateRoute><EditClassroom /></PrivateRoute>} />
           <Route path="/class/:id/assignments/create" element={<PrivateRoute><CreateAssignment /></PrivateRoute>} />

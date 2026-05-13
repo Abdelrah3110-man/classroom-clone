@@ -48,6 +48,7 @@ const AssignmentDetails = () => {
       const data = new FormData();
       data.append('assignment_id', assignmentId);
       data.append('file', submissionFile);
+      data.append('user_id', user?.id);
       if (submissionNote) data.append('note', submissionNote);
 
       await api.post('/submissions', data, {
@@ -61,6 +62,28 @@ const AssignmentDetails = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleUnsubmitWork = async () => {
+    if (!mySubmission) return;
+    
+    showConfirm(
+      "Unsubmit Work",
+      "Are you sure you want to unsubmit your work? This will remove your current submission.",
+      async () => {
+        setSubmitting(true);
+        try {
+          await api.delete(`/submissions/${mySubmission.id}`, { data: { user_id: user?.id } });
+          showToast("Work unsubmitted successfully.", "success");
+          await fetchData();
+          setSubmissionFile(null);
+        } catch (err) {
+          showToast("Failed to unsubmit work.", "error");
+        } finally {
+          setSubmitting(false);
+        }
+      }
+    );
   };
 
   const handleDeleteAssignment = () => {
@@ -229,8 +252,12 @@ const AssignmentDetails = () => {
                       View Submitted File
                     </a>
                   )}
-                  <button className="w-full p-4 border-2 border-slate-200 text-text-secondary font-bold rounded-2xl hover:bg-slate-50 hover:text-red-500 hover:border-red-200 transition-all">
-                    Unsubmit Work
+                  <button 
+                    onClick={handleUnsubmitWork}
+                    disabled={submitting}
+                    className="w-full p-4 border-2 border-slate-200 text-text-secondary font-bold rounded-2xl hover:bg-slate-50 hover:text-red-500 hover:border-red-200 transition-all disabled:opacity-50"
+                  >
+                    {submitting ? 'Processing...' : 'Unsubmit Work'}
                   </button>
                 </div>
               ) : (
